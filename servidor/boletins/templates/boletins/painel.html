@@ -1,0 +1,567 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Painel de apuração · Apura BU</title>
+<style>
+  :root {
+    color-scheme: light;
+    --fundo: #f3f5f8; --cartao: #ffffff; --texto: #142033; --suave: #5b6b80; --borda: #dde3eb; --grade: #edf1f5;
+    --hover: #f1f5fa; --marca: #0f1b2d; --aviso-fundo: #fdf4e3; --link: #1f5ea8;
+    --barra: #2f6fb3; --trilho: #e3ecf7;
+    --ok: #19643b; --alerta: #855300; --erro: #c0392b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      color-scheme: dark;
+      --fundo: #0b1320; --cartao: #142033; --texto: #e9eef5; --suave: #93a3b8; --borda: #24344c; --grade: #1b2a3f;
+      --hover: #1a2a41; --marca: #070d17; --aviso-fundo: #2a2213; --link: #8cbcf2;
+      --barra: #3987e5; --trilho: #1c2d47;
+      --ok: #3fb56f; --alerta: #e0a33a; --erro: #e5675a;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --fundo: #0b1320; --cartao: #142033; --texto: #e9eef5; --suave: #93a3b8; --borda: #24344c; --grade: #1b2a3f;
+    --hover: #1a2a41; --marca: #070d17; --aviso-fundo: #2a2213; --link: #8cbcf2;
+    --barra: #3987e5; --trilho: #1c2d47;
+    --ok: #3fb56f; --alerta: #e0a33a; --erro: #e5675a;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; background: var(--fundo); color: var(--texto);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+
+  .topo { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; gap: 8px 16px;
+    justify-content: space-between; align-items: center; padding: 10px 16px; background: var(--marca); color: #fff; }
+  .marca { font-weight: 800; display: flex; align-items: center; gap: 10px; font-size: 17px; min-width: 0; }
+  .marca small { font-weight: 400; opacity: .8; font-size: 14px; }
+  .nome-app { white-space: nowrap; }
+  .ponto { flex: none; width: 10px; height: 10px; border-radius: 50%; background: #e53935; box-shadow: 0 0 0 3px rgba(229,57,53,.3); }
+  .off .ponto { background: #8796a8; box-shadow: none; }
+  .topo-dir { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .rede { font-size: 14px; padding: 4px 10px; border-radius: 99px; background: rgba(255,255,255,.12); }
+  .off .rede { background: #a33a2e; }
+  .btn-topo { font: inherit; font-size: 14px; font-weight: 600; color: #fff; background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.25); border-radius: 8px; padding: 10px 12px; min-height: 44px; cursor: pointer; text-decoration: none; }
+  .aviso { margin: 0; padding: 8px 16px; font-size: 14px; background: var(--aviso-fundo); border-bottom: 1px solid var(--borda); }
+
+  .filtros { display: flex; flex-wrap: wrap; gap: 12px; padding: 12px 16px; max-width: 1400px; margin: 0 auto; }
+  .filtros label { display: flex; flex-direction: column; gap: 4px; font-size: 14px; color: var(--suave); flex: 1 1 220px; max-width: 380px; }
+  .filtros select { width: 100%; min-height: 44px; padding: 8px; font: inherit; color: var(--texto); background: var(--cartao);
+    border: 1px solid var(--borda); border-radius: 8px; }
+  main { max-width: 1400px; margin: 0 auto; padding: 0 16px 32px; transition: opacity .2s; }
+  .carregando main { opacity: .7; }
+
+  .cartao { background: var(--cartao); border: 1px solid var(--borda); border-radius: 14px; padding: 16px; min-width: 0; }
+  h2 { font-size: 17px; margin: 0; }
+  h3 { font-size: 14px; margin: 16px 0 6px; color: var(--suave); font-weight: 600; }
+  .sub, .nota, .legenda-escala { color: var(--suave); font-size: 14px; margin: 0; }
+  .nota, .legenda-escala { font-size: 14px; margin-top: 2px; }
+  .legenda-escala { margin-bottom: 8px; }
+  .vazio { color: var(--suave); text-align: center; padding: 24px; }
+
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 12px; margin-bottom: 12px; }
+  .kpi .rotulo { display: block; font-size: 14px; color: var(--suave); }
+  .kpi .valor { display: block; font-size: 30px; font-weight: 700; line-height: 1.15; margin: 4px 0; }
+  .kpi.hero .valor { font-size: 52px; }
+  .kpi .sub { display: block; }
+  .medidor { height: 10px; margin-top: 10px; background: var(--trilho); border-radius: 0 5px 5px 0; overflow: hidden; }
+  .medidor i { display: block; height: 100%; background: var(--barra); border-radius: 0 5px 5px 0; }
+  .medidor.mini { height: 8px; margin: 0; min-width: 70px; }
+
+  .destaques, .proporcionais, .inferior { display: grid; gap: 12px; margin-bottom: 12px; }
+  .destaques { grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); }
+  .proporcionais { grid-template-columns: repeat(auto-fit, minmax(min(100%, 460px), 1fr)); }
+  .inferior { grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); align-items: start; }
+  .cargo header { margin-bottom: 4px; }
+
+  .barras { list-style: none; margin: 0; padding: 0; }
+  .barra-linha { display: grid; grid-template-columns: 2.2em minmax(0, 1.5fr) minmax(60px, 1.4fr) 5.8em;
+    grid-template-areas: "pos quem trilho valor"; gap: 10px; align-items: center; padding: 6px 4px; border-radius: 8px; outline: none; }
+  .barra-linha:hover, .barra-linha:focus-visible { background: var(--hover); }
+  .barra-linha:focus-visible { box-shadow: 0 0 0 2px var(--barra); }
+  .pos { grid-area: pos; color: var(--suave); font-size: 14px; font-variant-numeric: tabular-nums; }
+  .quem { grid-area: quem; min-width: 0; display: flex; flex-direction: column; }
+  .quem strong { font-weight: 600; overflow-wrap: anywhere; line-height: 1.25; }
+  .quem small, .barra-linha .valor small { color: var(--suave); font-size: 14px; }
+  .trilho { grid-area: trilho; position: relative; height: 14px; background: var(--trilho); border-radius: 0 4px 4px 0; }
+  .trilho i { display: block; height: 100%; min-width: 2px; background: var(--barra); border-radius: 0 4px 4px 0; }
+  .trilho.com-maioria::after { content: ""; position: absolute; left: 50%; top: -4px; bottom: -4px; width: 1px; background: var(--texto); opacity: .5; }
+  .barra-linha .valor { grid-area: valor; display: flex; flex-direction: column; text-align: right; font-variant-numeric: tabular-nums; }
+  .barra-linha .valor strong { font-size: 15px; }
+  details.mais summary { cursor: pointer; color: var(--link); font-size: 14px; padding: 10px 4px; min-height: 44px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; font-size: 14px; color: var(--suave); font-weight: 600; padding: 6px 8px; border-bottom: 1px solid var(--borda); }
+  td { padding: 7px 8px; border-bottom: 1px solid var(--grade); vertical-align: middle; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .rolagem { overflow-x: auto; margin-top: 8px; }
+  .link { background: none; border: 0; padding: 8px 0; min-height: 44px; font: inherit; color: var(--link); cursor: pointer; text-align: left;
+    text-decoration: underline; text-decoration-color: var(--borda); text-underline-offset: 3px; }
+  .btn-mais { margin-top: 10px; font: inherit; font-size: 14px; color: var(--link); background: none; border: 1px solid var(--borda);
+    border-radius: 8px; padding: 10px 12px; min-height: 44px; cursor: pointer; }
+  .status { display: flex; gap: 6px; align-items: baseline; margin: 4px 0; font-size: 14px; }
+  .status .icone { font-weight: 700; flex: none; }
+  .ok .icone { color: var(--ok); } .alerta .icone { color: var(--alerta); } .erro .icone { color: var(--erro); }
+  .lista-alertas { list-style: none; margin: 6px 0 0; padding: 0; }
+  td .status { margin: 0; font-size: 14px; }
+
+  .dica-flutuante { position: fixed; z-index: 20; pointer-events: auto; display: flex; flex-direction: column; gap: 2px;
+    max-width: min(320px, calc(100vw - 32px)); max-height: calc(100vh - 32px); overflow-y: auto; padding: 12px 16px; font-size: 14px; background: var(--cartao); color: var(--texto);
+    border-radius: 12px; box-shadow: 0 6px 24px rgba(0,0,0,.3); }
+  .dica-flutuante strong { font-size: 15px; }
+  .dica-flutuante .apagado { color: var(--suave); }
+
+  /* modo telão: só o essencial, letras grandes */
+  .telao .atalhos, .telao .filtros, .telao .proporcionais, .telao .inferior, .telao .kpi.secundario { display: none; }
+  .telao main { max-width: none; padding: 12px 24px; }
+  .telao .destaques { grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); }
+  .telao .cargo h2 { font-size: 26px; }
+  .telao .barra-linha { font-size: 19px; padding: 8px 4px; }
+  .telao .barra-linha .valor strong { font-size: 22px; }
+  .telao .quem small, .telao .barra-linha .valor small { font-size: 14px; }
+  .telao .trilho { height: 20px; }
+
+  @media (max-width: 560px) {
+    .topo { position: static; }
+    .barra-linha { grid-template-columns: 1.8em minmax(0, 1fr) auto; grid-template-areas: "pos quem valor" ". trilho trilho"; row-gap: 4px; }
+    .kpi.hero .valor { font-size: 44px; }
+  }
+  ::selection { background: #e8a317; color: #1a1300; }
+  :focus-visible { outline: 3px solid var(--link); outline-offset: 3px; }
+  a { text-underline-offset: 3px; }
+  select { font-size: 16px !important; }
+  main, section[id], div[id^="bloco-"] { scroll-margin-top: 100px; }
+  .atalhos { display: flex; flex-wrap: wrap; gap: 8px; max-width: 1400px; margin: 0 auto; padding: 12px 16px; }
+  .atalhos a { display: inline-flex; align-items: center; min-height: 44px; padding: 8px 16px; color: var(--link); border: 1px solid var(--borda); border-radius: 8px; text-decoration: none; font-weight: 600; }
+  .atalhos a:hover { background: var(--hover); }
+  .pausa { color: var(--suave); font-size: 14px; padding: 0 16px; max-width: 1400px; margin: 0 auto 12px; }
+  .pausa:empty { display: none; }
+  .quem strong { font-size: 16px; }
+  .marca { flex-wrap: wrap; }
+  .marca small { flex-basis: 100%; }
+  .btn-topo { min-height: 44px; display: inline-flex; align-items: center; }
+  .skip { position: absolute; top: -100px; left: 16px; padding: 12px; z-index: 30; background: var(--cartao); color: var(--texto); }
+  .skip:focus { top: 8px; }
+  .cartao h2 { font-size: 20px; }
+  @media (max-width: 560px) {
+    .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    .kpi { padding: 12px; }
+    .kpi.hero .valor { font-size: 36px; }
+    .kpi .valor { font-size: 28px; }
+    .kpi .sub, .kpi .rotulo { font-size: 14px; }
+    .marca small { font-size: 14px; }
+    .filtros { gap: 8px; }
+    .atalhos { position: sticky; top: 0; z-index: 4; background: var(--fundo); }
+    .atalhos a { flex: 1; justify-content: center; padding-inline: 8px; }
+    .inferior { grid-template-columns: minmax(0, 1fr); }
+    .telao .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (prefers-reduced-motion: reduce) { main { transition: none; } }
+</style>
+</head>
+<body>
+<a class="skip" href="#conteudo">Ir para os resultados</a>
+<header class="topo" id="topo">
+  <div class="marca"><span class="ponto" aria-hidden="true"></span> <span class="nome-app">Apura BU</span> <small id="escopo">painel</small></div>
+  <div class="topo-dir">
+    <span class="rede" id="estado" role="status">carregando…</span>
+    <button class="btn-topo" id="btn-telao" type="button">Modo telão</button>
+    <a class="btn-topo" href="{% url 'manual' %}">Manual</a>
+    <a class="btn-topo" href="{% url 'admin:index' %}">Admin</a>
+  </div>
+</header>
+<p class="aviso" id="aviso">Resultado parcial e extraoficial, a partir dos boletins de urna recebidos. O resultado oficial é divulgado pelo TSE.</p>
+
+<form class="filtros" id="filtros" onsubmit="return false">
+  <label>Eleição
+    <select name="eleicao">
+      <option value="">Em acompanhamento</option>
+      {% for e in eleicoes %}<option value="{{ e.pk }}">{{ e }}</option>{% endfor %}
+    </select>
+  </label>
+  <label>Município
+    <select name="municipio">
+      <option value="">{{ uf }} inteiro</option>
+      {% for m in municipios %}<option value="{{ m.codigo_tse }}">{{ m.nome }}</option>{% endfor %}
+    </select>
+  </label>
+  <label>Local de votação
+    <select name="local" disabled><option value="">Todos os locais</option></select>
+  </label>
+</form>
+
+<nav class="atalhos" aria-label="Seções do painel">
+  <a href="#destaques">Resultados</a>
+  <a href="#bloco-abrangencia">Cobertura</a>
+  <a href="#bloco-celulares">Equipe</a>
+</nav>
+<p class="pausa" id="atualizacao-pausa" role="status" aria-live="polite"></p>
+<main id="conteudo" tabindex="-1">
+  <h1 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)">Painel de apuração extraoficial</h1>
+  <section class="kpis" id="kpis"></section>
+  <section class="destaques" id="destaques" aria-label="Resultados dos cargos principais" tabindex="-1"></section>
+  <section class="proporcionais" id="proporcionais"></section>
+  <section class="inferior">
+    <div class="cartao" id="bloco-abrangencia" tabindex="-1"><h2 id="tit-abrangencia">Urnas apuradas por município</h2><div class="rolagem"><table id="tab-abrangencia"></table></div><div id="mais-abrangencia"></div></div>
+    <div class="cartao"><h2>Últimos boletins recebidos</h2><div class="rolagem"><table id="tab-ultimos"></table></div></div>
+    <div class="cartao" id="bloco-celulares" tabindex="-1"><h2>Celulares</h2><div class="rolagem"><table id="tab-celulares"></table></div></div>
+  </section>
+</main>
+<div class="dica-flutuante" id="dica" role="tooltip" hidden></div>
+
+<script>
+const URL_DADOS = "{% url 'painel-dados' %}";
+const URL_LOGIN = "{% url 'admin:login' %}";
+const UF = "{{ uf|escapejs }}";
+const NOME_UF = { PR: "Paraná" }[UF] || UF;
+const INTERVALO = 20000;          // atualização automática (ms)
+const SILENCIO_MIN = 30;          // celular sem enviar há mais tempo que isso vira alerta
+
+const $ = (s) => document.querySelector(s);
+const form = $("#filtros");
+const dica = $("#dica");
+let timer = null, mostrarTodos = false, cargaAtual = 0;
+const atualizacoesPendentes = new Map();
+const abertos = new Set();        // "ver mais" abertos sobrevivem às atualizações
+
+// Monta elementos sem innerHTML: nomes vêm do TSE e dos celulares.
+function el(tag, props = {}, ...filhos) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(props)) {
+    if (v == null || v === false) continue;
+    if (k === "class") e.className = v;
+    else if (k === "style") e.style.cssText = v;
+    else e.setAttribute(k, v);
+  }
+  for (const f of filhos.flat()) if (f != null && f !== false && f !== "") e.append(f instanceof Node ? f : String(f));
+  return e;
+}
+const fmt = (n) => Number(n || 0).toLocaleString("pt-BR");
+const votos = (n) => `${fmt(n)} ${Number(n) === 1 ? "voto" : "votos"}`;
+const pct = (v) => Number(v || 0).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + "%";
+const hora = (iso) => new Date(iso).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit", second: "2-digit", timeZone: "America/Sao_Paulo" });
+const minutos = (iso) => Math.max(0, Math.round((Date.now() - new Date(iso)) / 60000));
+function ha(iso) {
+  const m = minutos(iso);
+  return m < 1 ? "agora" : m < 60 ? `há ${m} min` : `há ${Math.floor(m / 60)} h ${m % 60} min`;
+}
+const status = (tipo, icone, texto) => el("span", { class: "status " + tipo }, el("span", { class: "icone", "aria-hidden": "true" }, icone), texto);
+const medidor = (p, mini) => el("div", { class: "medidor" + (mini ? " mini" : ""), role: "progressbar",
+  "aria-label": "Urnas apuradas", "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": Math.min(100, Math.round(p)) }, el("i", { style: `width:${Math.min(100, p).toFixed(2)}%` }));
+
+// ------------------------------------------------------------ filtros e endereço
+function lerEndereco() {
+  const p = new URLSearchParams(location.search);
+  for (const k of ["eleicao", "municipio"]) if (p.get(k)) form.elements[k].value = p.get(k);
+  form.elements.local.dataset.desejado = p.get("local") || "";
+  document.body.classList.toggle("telao", p.get("telao") === "1");
+}
+function parametros() {
+  const p = new URLSearchParams();
+  for (const k of ["eleicao", "municipio", "local"]) if (form.elements[k].value) p.set(k, form.elements[k].value);
+  return p;
+}
+function gravarEndereco() {
+  const p = parametros();
+  if (document.body.classList.contains("telao")) p.set("telao", "1");
+  history.replaceState(null, "", location.pathname + (String(p) ? "?" + p : ""));
+}
+function aplicarFiltro(nome, valor) {
+  form.elements[nome].value = valor;
+  form.elements[nome].dispatchEvent(new Event("change", { bubbles: true }));
+}
+form.addEventListener("change", (e) => {
+  if (!e.target || e.target.name !== "local") { form.elements.local.value = ""; form.elements.local.dataset.desejado = ""; }
+  if (e.target && e.target.name === "local") form.elements.local.dataset.desejado = form.elements.local.value;
+  mostrarTodos = false;
+  gravarEndereco();
+  carregar();
+});
+function escopo() {
+  const m = form.elements.municipio, l = form.elements.local;
+  let t = m.value ? m.selectedOptions[0].textContent : `${NOME_UF} inteiro`;
+  if (l.value && l.selectedOptions[0]) t += " · " + l.selectedOptions[0].textContent;
+  return t;
+}
+
+// ------------------------------------------------------------ carga periódica
+function estado(texto, ok) {
+  $("#estado").textContent = texto;
+  $("#topo").classList.toggle("off", !ok);
+}
+async function carregar() {
+  clearTimeout(timer);
+  document.body.classList.add("carregando");
+  const carga = ++cargaAtual;
+  try {
+    const r = await fetch(URL_DADOS + "?" + parametros(), { credentials: "same-origin", headers: { Accept: "application/json" } });
+    if (r.status === 403) { location.href = URL_LOGIN + "?next=" + encodeURIComponent(location.pathname + location.search); return; }
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const d = await r.json();
+    if (carga !== cargaAtual) return;
+    desenhar(d);
+    estado("atualizado às " + hora(d.atualizado_em || new Date().toISOString()), true);
+  } catch (e) {
+    console.error(e);
+    estado("sem conexão · tentando de novo", false);
+  } finally {
+    if (carga === cargaAtual) {
+      document.body.classList.remove("carregando");
+      timer = setTimeout(carregar, INTERVALO);
+    }
+  }
+}
+document.addEventListener("visibilitychange", () => { if (!document.hidden) carregar(); });
+
+// Atualiza outras regiões, mas preserva o nó que a pessoa está usando no teclado.
+function atualizarRegiao(seletor, desenhar) {
+  const regiao = $(seletor);
+  if (regiao.contains(document.activeElement)) atualizacoesPendentes.set(seletor, desenhar);
+  else { atualizacoesPendentes.delete(seletor); desenhar(); }
+  $("#atualizacao-pausa").textContent = atualizacoesPendentes.size
+    ? "A lista em uso será atualizada quando você mover o foco para fora dela. As demais informações continuam atualizando." : "";
+}
+document.addEventListener("focusout", () => setTimeout(() => {
+  for (const [seletor, desenhar] of [...atualizacoesPendentes]) atualizarRegiao(seletor, desenhar);
+}, 0));
+
+// ------------------------------------------------------------ desenho
+function desenhar(d) {
+  $("#aviso").textContent = d.aviso;
+  if (!d.eleicao) {
+    atualizarRegiao("#kpis", () => $("#kpis").replaceChildren(el("div", { class: "cartao vazio", style: "grid-column:1/-1" },
+      "Aguardando o primeiro boletim. Assim que um celular enviar, o painel começa a somar.")));
+    for (const seletor of ["#destaques", "#proporcionais", "#tab-abrangencia", "#tab-ultimos", "#tab-celulares"])
+      atualizarRegiao(seletor, () => $(seletor).replaceChildren());
+    $("#escopo").textContent = escopo();
+    return;
+  }
+  preencherLocais(d.abrangencia);
+  $("#escopo").textContent = escopo() + " · " + d.eleicao.descricao;
+  atualizarRegiao("#kpis", () => desenharKpis(d));
+  const destaque = d.cargos.filter((c) => c.destaque), outros = d.cargos.filter((c) => !c.destaque);
+  atualizarRegiao("#destaques", () => $("#destaques").replaceChildren(...(destaque.length ? destaque.map(cartaoCargo)
+    : [el("div", { class: "cartao vazio" }, "Nenhum boletim oficial recebido para este filtro ainda.")])));
+  atualizarRegiao("#proporcionais", () => $("#proporcionais").replaceChildren(...outros.map(cartaoCargo)));
+  atualizarRegiao("#bloco-abrangencia", () => desenharAbrangencia(d.abrangencia));
+  atualizarRegiao("#tab-ultimos", () => desenharUltimos(d.ultimos));
+  atualizarRegiao("#tab-celulares", () => desenharCelulares(d.celulares));
+}
+
+function preencherLocais(ab) {
+  const sel = form.elements.local, mun = form.elements.municipio.value;
+  if (ab.nivel !== "locais") {
+    sel.replaceChildren(el("option", { value: "" }, "Todos os locais"));
+    sel.disabled = true; sel.dataset.mun = "";
+    return;
+  }
+  if (sel.dataset.mun !== mun) {  // só refaz a lista quando muda o município
+    sel.replaceChildren(el("option", { value: "" }, "Todos os locais"),
+      ...[...ab.linhas].sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"))
+        .map((l) => el("option", { value: l.codigo }, `${l.nome} (zona ${l.zona})`)));
+    sel.dataset.mun = mun;
+  }
+  sel.disabled = false;
+  sel.value = sel.dataset.desejado || "";
+}
+
+function desenharKpis(d) {
+  const p = d.progresso, ab = d.abrangencia, a = d.alertas;
+  const pUrnas = p.secoes_esperadas ? 100 * p.secoes_apuradas / p.secoes_esperadas : 0;
+  const locaisCom = ab.linhas.filter((l) => l.apuradas > 0).length;
+  const alertas = [
+    [a.somas_divergentes, "erro", "com somas divergentes: confira o papel"],
+    [a.sem_certificado, "alerta", "sem o certificado da urna"],
+    [a.nao_oficiais, "alerta", "simulados ou de treinamento, fora da soma"],
+    [a.outra_uf, "alerta", "de outra UF, fora da soma"],
+  ].filter(([n]) => n);
+  $("#kpis").replaceChildren(
+    el("div", { class: "cartao kpi hero" },
+      el("span", { class: "rotulo" }, "Urnas apuradas"),
+      el("strong", { class: "valor" }, fmt(p.secoes_apuradas)),
+      el("span", { class: "sub" }, p.secoes_esperadas
+        ? `de ${fmt(p.secoes_esperadas)} urnas · ${pct(pUrnas)}` : "base de locais do TSE não importada para esta eleição"),
+      p.secoes_esperadas ? medidor(pUrnas) : null),
+    el("div", { class: "cartao kpi" },
+      el("span", { class: "rotulo" }, "Comparecimento"),
+      el("strong", { class: "valor" }, pct(p.percentual_comparecimento)),
+      el("span", { class: "sub" }, `${fmt(p.comparecimento)} de ${fmt(p.aptos)} eleitores nas urnas apuradas`)),
+    el("div", { class: "cartao kpi secundario" },
+      el("span", { class: "rotulo" }, ab.nivel === "municipios" ? "Municípios com boletim" : "Locais com boletim"),
+      el("strong", { class: "valor" }, fmt(ab.nivel === "municipios" ? p.municipios_com_boletim : locaisCom)),
+      el("span", { class: "sub" }, ab.nivel === "municipios" ? `de ${fmt(p.municipios_total)} municípios` : `de ${fmt(ab.linhas.length)} locais do município`)),
+    el("div", { class: "cartao kpi secundario" },
+      el("span", { class: "rotulo" }, "Alertas"),
+      alertas.length
+        ? el("ul", { class: "lista-alertas" }, alertas.map(([n, tipo, txt]) => el("li", {}, status(tipo, "⚠", `${fmt(n)} ${n === 1 ? "boletim" : "boletins"} ${txt}`))))
+        : status("ok", "✓", "Nenhum alerta")),
+  );
+}
+
+function cartaoCargo(cg) {
+  const maioria = cg.escala === "maioria";
+  const lista = cg.candidatos;
+  const max = Math.max(1, ...lista.map((c) => c.votos));
+  const linha = (c, i) => linhaBarra({
+    pos: i + 1, nome: c.nome || `Nº ${c.numero}`, detalhe: [c.partido, c.nome ? `nº ${c.numero}` : ""].filter(Boolean).join(" · "),
+    votos: c.votos, perc: c.percentual, largura: maioria ? c.percentual : 100 * c.votos / max, maioria,
+    anterior: lista[i - 1], proximo: lista[i + 1],
+  });
+  const corte = cg.destaque ? lista.length : 10;
+  const resto = lista.slice(corte);
+  const chave = "c" + cg.codigo;
+
+  let partidos = null;
+  if (cg.partidos.length) {
+    const ps = cg.partidos.slice(0, 10), maxP = Math.max(1, ...ps.map((p) => p.votos));
+    partidos = el("div", {},
+      el("h3", {}, "Por partido (nominais + legenda)"),
+      el("ol", { class: "barras" }, ps.map((p, i) => linhaBarra({
+        pos: i + 1, nome: p.sigla, detalhe: `nº ${p.numero}`, votos: p.votos, perc: p.percentual,
+        largura: 100 * p.votos / maxP, anterior: ps[i - 1], proximo: ps[i + 1],
+      }))));
+  }
+  return el("article", { class: "cartao cargo", "data-cargo": cg.codigo },
+    el("header", {},
+      el("h2", {}, cg.cargo),
+      el("p", { class: "sub" }, `Válidos ${fmt(cg.validos)} · Brancos ${fmt(cg.brancos)} · Nulos ${fmt(cg.nulos)}`),
+      cg.nota ? el("p", { class: "nota" }, cg.nota) : null),
+    el("p", { class: "legenda-escala" }, maioria ? "Barra: % dos votos válidos. A linha marca 50%." : "Barra: proporcional ao 1º colocado."),
+    lista.length ? el("ol", { class: "barras" }, lista.slice(0, corte).map(linha)) : el("p", { class: "vazio" }, "Sem votos ainda."),
+    resto.length ? maisDetalhes(chave, `Ver mais ${resto.length}` +
+      (cg.qtd_candidatos > lista.length ? ` (mostrando ${lista.length} de ${cg.qtd_candidatos})` : ""),
+      el("ol", { class: "barras" }, resto.map((c, i) => linha(c, i + corte)))) : null,
+    partidos);
+}
+
+function maisDetalhes(chave, titulo, conteudo) {
+  const det = el("details", { class: "mais" }, el("summary", {}, titulo), conteudo);
+  det.open = abertos.has(chave);
+  det.addEventListener("toggle", () => det.open ? abertos.add(chave) : abertos.delete(chave));
+  return det;
+}
+
+function linhaBarra(o) {
+  const li = el("li", { class: "barra-linha", tabindex: "0",
+    "aria-label": `${o.pos}º ${o.nome}: ${votos(o.votos)}, ${pct(o.perc)} dos válidos` },
+    el("span", { class: "pos" }, `${o.pos}º`),
+    el("span", { class: "quem" }, el("strong", {}, o.nome), el("small", {}, o.detalhe)),
+    el("span", { class: "trilho" + (o.maioria ? " com-maioria" : "") }, el("i", { style: `width:${Math.min(100, o.largura).toFixed(2)}%` })),
+    el("span", { class: "valor" }, el("strong", {}, pct(o.perc)), el("small", {}, votos(o.votos))));
+  li.addEventListener("pointerenter", () => { mostrarDica(o, li); const r = li.getBoundingClientRect(); posicionarDica(r.left, r.bottom); });
+  li.addEventListener("pointerleave", agendarEsconderDica);
+  li.addEventListener("focus", () => { mostrarDica(o, li); const r = li.getBoundingClientRect(); posicionarDica(r.left, r.bottom); });
+  li.addEventListener("blur", agendarEsconderDica);
+  return li;
+}
+
+let origemDica = null, timerDica;
+function mostrarDica(o, origem) {
+  clearTimeout(timerDica);
+  origemDica?.removeAttribute("aria-describedby");
+  origemDica = origem;
+  origem.setAttribute("aria-describedby", "dica");
+  const linhas = [el("strong", {}, votos(o.votos)), el("span", {}, `${pct(o.perc)} dos válidos`),
+    el("span", { class: "apagado" }, o.nome + (o.detalhe ? " · " + o.detalhe : ""))];
+  if (o.anterior) linhas.push(el("span", {}, `${votos(o.anterior.votos - o.votos)} atrás do ${o.pos - 1}º`));
+  if (o.proximo) linhas.push(el("span", {}, `${votos(o.votos - o.proximo.votos)} à frente do ${o.pos + 1}º`));
+  dica.replaceChildren(...linhas);
+  dica.hidden = false;
+}
+function posicionarDica(x, y) {
+  const w = dica.offsetWidth, h = dica.offsetHeight;
+  dica.style.left = Math.max(16, Math.min(x, innerWidth - w - 16)) + "px";
+  dica.style.top = Math.max(16, Math.min(y + 6, innerHeight - h - 16)) + "px";
+}
+function agendarEsconderDica() {
+  clearTimeout(timerDica);
+  timerDica = setTimeout(() => {
+    if (!dica.matches(":hover") && document.activeElement !== origemDica) esconderDica();
+  }, 250);
+}
+function esconderDica() {
+  clearTimeout(timerDica);
+  dica.hidden = true;
+  origemDica?.removeAttribute("aria-describedby");
+  origemDica = null;
+}
+dica.addEventListener("pointerenter", () => clearTimeout(timerDica));
+dica.addEventListener("pointerleave", agendarEsconderDica);
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") esconderDica(); });
+
+function desenharAbrangencia(ab) {
+  const munis = ab.nivel === "municipios";
+  $("#tit-abrangencia").textContent = munis ? "Urnas apuradas por município" : "Urnas apuradas por local de votação";
+  const linhas = mostrarTodos ? ab.linhas : ab.linhas.slice(0, 25);
+  $("#tab-abrangencia").replaceChildren(
+    el("thead", {}, el("tr", {}, el("th", {}, munis ? "Município" : "Local"), munis ? null : el("th", { class: "num" }, "Zona"),
+      el("th", { class: "num" }, "Urnas"), el("th", {}, "Progresso"))),
+    el("tbody", {}, linhas.length ? linhas.map((l) => {
+      const p = l.esperadas ? 100 * l.apuradas / l.esperadas : 0;
+      const botao = el("button", { class: "link", type: "button" }, l.nome);
+      botao.addEventListener("click", () => aplicarFiltro(munis ? "municipio" : "local", l.codigo));
+      return el("tr", {}, el("td", {}, botao), munis ? null : el("td", { class: "num" }, l.zona),
+        el("td", { class: "num" }, l.esperadas ? `${fmt(l.apuradas)} de ${fmt(l.esperadas)}` : fmt(l.apuradas)),
+        el("td", {}, l.esperadas ? medidor(p, true) : el("span", { class: "sub" }, "—")));
+    }) : el("tr", {}, el("td", { colspan: 4, class: "vazio" }, "Nenhum boletim recebido ainda."))));
+  const mais = $("#mais-abrangencia");
+  if (ab.linhas.length > 25) {
+    const b = el("button", { class: "btn-mais", type: "button" }, mostrarTodos ? "Mostrar menos" : `Mostrar todos (${fmt(ab.linhas.length)})`);
+    b.addEventListener("click", () => { mostrarTodos = !mostrarTodos; desenharAbrangencia(ab); });
+    mais.replaceChildren(b);
+  } else mais.replaceChildren();
+}
+
+function desenharUltimos(lista) {
+  $("#tab-ultimos").replaceChildren(
+    el("thead", {}, el("tr", {}, el("th", {}, "Hora"), el("th", {}, "Seção"), el("th", {}, "Local"), el("th", {}, "Situação"))),
+    el("tbody", {}, lista.length ? lista.map((b) => el("tr", {},
+      el("td", { class: "num" }, hora(b.recebido_em).slice(0, 5)),
+      el("td", { class: "num" }, `${b.zona}/${b.secao}`),
+      el("td", {}, b.local, el("div", { class: "sub" }, [b.municipio, b.reporter].filter(Boolean).join(" · "))),
+      el("td", {}, !b.oficial ? status("alerta", "⚠", "não oficial")
+        : b.avisos ? status("erro", "⚠", "somas divergentes")
+        : b.assinatura === "valida" ? status("ok", "✓", "assinatura válida")
+        : status("alerta", "⚠", "sem certificado"))))
+      : el("tr", {}, el("td", { colspan: 4, class: "vazio" }, "Nenhum boletim recebido ainda."))));
+}
+
+function desenharCelulares(lista) {
+  $("#tab-celulares").replaceChildren(
+    el("thead", {}, el("tr", {}, el("th", {}, "Repórter / equipe"), el("th", { class: "num" }, "Boletins"), el("th", {}, "Último envio"))),
+    el("tbody", {}, lista.length ? lista.map((c) => {
+      const silencio = c.ativo && c.boletins > 0 && c.ultimo_envio && minutos(c.ultimo_envio) > SILENCIO_MIN;
+      return el("tr", {},
+        el("td", {}, c.nome),
+        el("td", { class: "num" }, fmt(c.boletins)),
+        el("td", {}, !c.ativo ? status("erro", "✕", "desativado")
+          : !c.ultimo_envio ? el("span", { class: "sub" }, "ainda não enviou")
+          : silencio ? status("alerta", "⚠", ha(c.ultimo_envio))
+          : status("ok", "●", ha(c.ultimo_envio))));
+    }) : el("tr", {}, el("td", { colspan: 3, class: "vazio" }, "Nenhum celular cadastrado no admin."))));
+}
+
+// ------------------------------------------------------------ modo telão
+function sincronizarTelao() {
+  const ativo = document.body.classList.contains("telao");
+  $("#btn-telao").textContent = ativo ? "Sair do telão" : "Modo telão";
+  $("#btn-telao").setAttribute("aria-pressed", String(ativo));
+  gravarEndereco();
+}
+$("#btn-telao").addEventListener("click", () => {
+  const ativo = document.body.classList.toggle("telao");
+  if (ativo) document.documentElement.requestFullscreen?.().catch(() => {});
+  else if (document.fullscreenElement) document.exitFullscreen?.();
+  sincronizarTelao();
+});
+
+lerEndereco();
+sincronizarTelao();
+carregar();
+</script>
+</body>
+</html>

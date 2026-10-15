@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Apura BU</title>
+  <meta name="theme-color" content="#0f1b2d">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icone.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icone-192.png">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <header class="topo">
+    <div class="marca"><span class="ponto" aria-hidden="true"></span><span>Apura BU<small>apuração extraoficial</small></span></div>
+    <div id="rede" class="rede" title="Situação do envio">—</div>
+  </header>
+
+  <main>
+    <div class="aviso-envio" role="status" aria-live="polite" aria-atomic="true">
+      <p id="envio-msg"></p>
+      <button id="btn-corrigir" class="btn-texto" hidden>Corrigir acesso</button>
+    </div>
+    <!-- LER -->
+    <section id="tela-ler" class="tela ativa" aria-label="Ler boletins">
+      <div class="camera">
+        <video id="video" playsinline muted aria-label="Imagem da câmera para ler QR Codes"></video>
+        <div class="mira"></div>
+        <div id="camera-msg" class="camera-msg">Toque em <b>Abrir câmera</b> e aponte para os QR Codes da fita.</div>
+      </div>
+      <div class="controles">
+        <button id="btn-camera" class="btn primario">Abrir câmera</button>
+        <button id="btn-lanterna" class="btn" hidden aria-pressed="false">Lanterna</button>
+      </div>
+
+      <div class="cartao" id="progresso">
+        <div class="linha">
+          <strong>Urna em leitura</strong>
+          <button id="btn-descartar" class="btn-texto">descartar</button>
+        </div>
+        <div id="chips" class="chips"></div>
+        <p id="dica" class="dica" role="status" aria-live="polite" aria-atomic="true">Leia os QR Codes do boletim, em qualquer ordem. O app avisa quando a urna estiver completa.</p>
+        <p id="leitura-msg" class="mensagem" role="status" aria-live="polite" aria-atomic="true"></p>
+      </div>
+
+      <div id="ultimo" class="cartao" hidden></div>
+
+      <details class="cartao manual">
+        <summary>Sem câmera? Colar o texto dos QR Codes</summary>
+        <label class="campo" for="txt-manual">Texto dos QR Codes, um por linha</label>
+        <textarea id="txt-manual" rows="4" spellcheck="false" aria-describedby="manual-msg" placeholder="Cole aqui os textos da fita"></textarea>
+        <button id="btn-manual" class="btn">Processar texto</button>
+        <p id="manual-msg" class="mensagem" role="status" aria-live="polite"></p>
+      </details>
+      <a class="ajuda" href="/manual/#imprevistos">Problemas com câmera ou leitura? Ver ajuda</a>
+    </section>
+
+    <!-- LOCAL -->
+    <section id="tela-local" class="tela">
+      <h1>Apuração neste celular</h1>
+      <div class="cartao">
+        <label class="campo">Mostrar
+          <select id="sel-local"></select>
+        </label>
+        <div id="resumo-local" class="resumo"></div>
+      </div>
+      <div id="cargos-local"></div>
+      <p class="aviso-legal">Resultado <b>parcial e extraoficial</b>, a partir dos boletins de urna lidos neste celular. O resultado oficial é divulgado pelo TSE.</p>
+    </section>
+
+    <!-- FILA -->
+    <section id="tela-fila" class="tela">
+      <h1>Envio para a rádio</h1>
+      <div class="cartao">
+        <p id="fila-resumo" role="status" aria-live="polite"></p>
+        <div class="controles">
+          <button id="btn-enviar" class="btn primario">Enviar pendentes</button>
+          <button id="btn-exportar" class="btn">Salvar arquivo</button>
+        </div>
+        <p id="fila-dica" class="dica"></p>
+        <p class="dica">Use <b>Salvar arquivo</b> para entregar os boletins na rádio por outro meio. Os dados continuam guardados neste celular.</p>
+      </div>
+      <ul id="lista-fila" class="lista"></ul>
+      <a class="ajuda" href="/manual/#imprevistos">Problemas com envio? Ver ajuda</a>
+    </section>
+
+    <!-- AJUSTES -->
+    <section id="tela-ajustes" class="tela">
+      <h1>Ajustes do celular</h1>
+      <p class="dica">Primeiro acesso? Peça à coordenação o QR Code de configuração. Ele preenche estes dados para você.</p>
+      <form id="form-ajustes" class="cartao">
+        <label class="campo">Endereço do servidor da rádio
+          <input name="servidor" type="url" inputmode="url" placeholder="https://apuracao.suaradio.com.br">
+        </label>
+        <label class="campo">Código de acesso deste celular
+          <input name="token" type="password" autocomplete="off" placeholder="fornecido pela rádio">
+        </label>
+        <label class="campo">Nome do repórter / equipe
+          <input name="reporter" maxlength="100" autocomplete="name" placeholder="ex.: Equipe Escola Estadual">
+        </label>
+        <label class="campo">Quando enviar
+          <select name="envio">
+            <option value="imediato">A cada urna lida (recomendado)</option>
+            <option value="manual">Só quando eu mandar</option>
+          </select>
+        </label>
+        <div class="controles">
+          <button class="btn primario" type="submit">Salvar</button>
+          <button class="btn" type="button" id="btn-testar">Testar conexão</button>
+        </div>
+        <p id="ajustes-msg" class="mensagem" role="status" aria-live="polite" aria-atomic="true"></p>
+      </form>
+      <a class="ajuda" href="/manual/#celulares">Como configurar este celular</a>
+      <div class="cartao">
+        <a class="btn" href="https://resultados.tse.jus.br/" target="_blank" rel="noopener">Resultados oficiais — TSE</a>
+        <a class="btn" href="https://dadosabertos.tse.jus.br/" target="_blank" rel="noopener">Dados abertos do TSE</a>
+        <button id="btn-limpar" class="btn perigo" type="button">Apagar boletins deste celular</button>
+      </div>
+    </section>
+  </main>
+
+  <nav class="abas" aria-label="Telas do aplicativo">
+    <button data-tela="ler" class="ativa" aria-controls="tela-ler" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h4l2-3h4l2 3h4v15H4Z"/><circle cx="12" cy="13" r="4"/></svg><span>Ler</span></button>
+    <button data-tela="local" aria-controls="tela-local"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3v18h17M8 17v-5m5 5V7m5 10V4"/></svg><span>Local</span></button>
+    <button data-tela="fila" aria-controls="tela-fila"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V3m-5 5 5-5 5 5M4 14v7h16v-7"/></svg><span>Envio</span><b id="badge" hidden></b></button>
+    <button data-tela="ajustes" aria-controls="tela-ajustes"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3v18M12 3v18M19 3v18"/><path d="M2 8h6M9 16h6M16 7h6"/></svg><span>Ajustes</span></button>
+  </nav>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="vendor/barcode-detector-ponyfill.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

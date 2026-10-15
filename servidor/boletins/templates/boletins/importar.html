@@ -1,0 +1,32 @@
+{% extends 'admin/base_site.html' %}
+{% block title %}Importar arquivo do celular{% endblock %}
+{% block breadcrumbs %}<div class="breadcrumbs"><a href="{% url 'admin:index' %}">Administração</a> &rsaquo; Importar boletins</div>{% endblock %}
+{% block content %}
+<div class="importacao">
+<h1>Importar boletins trazidos no celular</h1>
+<p>Use quando o repórter ficou sem internet e tocou em <b>Salvar arquivo</b> no app.
+  Seções já registradas são ignoradas; todos os QR Codes são validados de novo aqui.</p>
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  <p><label for="id_arquivos">Arquivos de boletins (.json)</label></p>
+  <p id="arquivos-ajuda">Você pode selecionar vários arquivos exportados pela aba Envio do app.</p>
+  <p><input id="id_arquivos" type="file" name="arquivos" accept=".json,application/json" aria-describedby="arquivos-ajuda arquivos-resumo" multiple required></p>
+  <p id="arquivos-resumo" role="status" aria-live="polite"></p>
+  <p><button type="submit" class="button default">Importar</button></p>
+</form>
+<p><a href="{% url 'manual' %}#imprevistos">Como exportar e trazer os boletins do celular</a></p>
+</div>
+<script>
+const arquivos = document.querySelector('#id_arquivos');
+arquivos.addEventListener('change', () => {
+  const n = arquivos.files.length;
+  document.querySelector('#arquivos-resumo').textContent = n ? `${n} ${n === 1 ? 'arquivo selecionado' : 'arquivos selecionados'}. Pronto para importar.` : 'Nenhum arquivo selecionado.';
+});
+arquivos.form.addEventListener('submit', () => {
+  const botao = arquivos.form.querySelector('button');
+  botao.disabled = true;
+  botao.textContent = 'Importando…';
+  document.querySelector('#arquivos-resumo').textContent = 'Conferindo os boletins. Aguarde a confirmação nesta página.';
+});
+</script>
+{% endblock %}

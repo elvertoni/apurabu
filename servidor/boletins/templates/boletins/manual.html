@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Guia do Apura BU</title>
+<link rel="icon" href="/app/icons/icone.svg" type="image/svg+xml">
+<meta name="description" content="Manual da equipe: como acessar e usar o Apura BU na apuração extraoficial.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,600..800&family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+<style>
+  /* Layout: faixa azul-marinho do app no topo; índice lateral fixo e coluna de leitura de ~68 caracteres */
+  :root {
+    color-scheme: light;
+    --fundo: #f3f5f9;
+    --papel: #ffffff;
+    --texto: #16223a;
+    --suave: #56657b;
+    --linha: #dae1ea;
+    --faixa: #0f1b2d;
+    --faixa-texto: #f2f5fa;
+    --faixa-suave: #aab8cc;
+    --ambar: #e8a317;
+    --ambar-tinta: #1a1300;
+    --ambar-texto: #875700;
+    --link: #1f5ea8;
+    --ok: #1d7444;
+    --fora: #a3392d;
+    --display: "Archivo", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+    --corpo: "Public Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --fundo: #0a111e; --papel: #111b2c; --texto: #e5ebf4; --suave: #9badc4; --linha: #23314a;
+      --faixa: #060c17; --faixa-texto: #eef3fa; --faixa-suave: #93a5bd;
+      --ambar: #f0b43a; --ambar-tinta: #1a1300; --ambar-texto: #f0b43a; --link: #8fbdf2;
+      --ok: #52c487; --fora: #ef7b6c; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --fundo: #0a111e; --papel: #111b2c; --texto: #e5ebf4; --suave: #9badc4; --linha: #23314a;
+    --faixa: #060c17; --faixa-texto: #eef3fa; --faixa-suave: #93a5bd;
+    --ambar: #f0b43a; --ambar-tinta: #1a1300; --ambar-texto: #f0b43a; --link: #8fbdf2;
+    --ok: #52c487; --fora: #ef7b6c; color-scheme: dark;
+  }
+  @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  img { max-width: 100%; }
+  body { margin: 0; -webkit-text-size-adjust: 100%; background: var(--fundo); color: var(--texto); font: 16px/1.6 var(--corpo); }
+  a { color: var(--link); text-underline-offset: 3px; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--ambar); outline-offset: 2px; border-radius: 4px; }
+  h1, h2, h3 { font-family: var(--display); font-stretch: 80%; line-height: 1.1; text-wrap: balance; margin: 0; }
+  code, .mono { font-family: var(--mono); font-size: .9em; }
+  .rotulo { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+
+  /* ---------- faixa de abertura */
+  .faixa { background: var(--faixa); color: var(--faixa-texto); }
+  .faixa-dentro, .corpo, .rodape-dentro {
+    max-width: 1120px; margin: 0 auto;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .faixa-dentro { padding-block: 40px 36px; display: grid; gap: 18px; }
+  .faixa-dentro > *, .fita > * { margin: 0; }
+  .faixa .rotulo { color: var(--faixa-suave); display: flex; align-items: center; gap: 10px; }
+  .ao-vivo { width: 9px; height: 9px; border-radius: 50%; background: #e53935; box-shadow: 0 0 0 3px rgba(229,57,53,.28); }
+  .faixa h1 { font-size: clamp(38px, 7vw, 64px); font-weight: 800; letter-spacing: -.01em; }
+  .faixa h1 span { color: var(--ambar); }
+  .faixa .lead { max-width: 62ch; margin: 0; font-size: 18px; color: var(--faixa-texto); }
+  .carimbo { justify-self: start; font-family: var(--mono); font-size: 13px; padding: 6px 12px;
+    border: 1.5px solid var(--ambar); color: var(--ambar); border-radius: 4px; }
+  .acoes { display: flex; flex-wrap: wrap; gap: 10px; }
+  .botao { display: inline-flex; align-items: center; min-height: 44px; padding: 10px 18px; border-radius: 8px;
+    font-weight: 700; text-decoration: none; font-size: 15px; }
+  .botao.principal { background: var(--ambar); color: var(--ambar-tinta); }
+  .botao.secundario { color: var(--faixa-texto); border: 1px solid rgba(255,255,255,.3); }
+  .datas { display: flex; flex-wrap: wrap; gap: 6px 22px; margin: 0; padding: 0; list-style: none; color: var(--faixa-suave); font-size: 14px; }
+  .datas b { color: var(--faixa-texto); font-weight: 600; }
+
+  /* ---------- corpo: índice + leitura */
+  .corpo { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 48px; padding-block: 40px 56px; }
+  .indice { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 24px); align-self: start; }
+  .indice .rotulo { color: var(--suave); margin: 0 0 10px; }
+  .indice ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; border-left: 1px solid var(--linha); }
+  .indice a { display: block; padding: 5px 0 5px 14px; margin-left: -1px; border-left: 2px solid transparent;
+    color: var(--suave); text-decoration: none; font-size: 14px; }
+  .indice a:hover { color: var(--texto); }
+  .indice a.atual { color: var(--texto); border-left-color: var(--ambar); font-weight: 600; }
+
+  article { min-width: 0; display: grid; gap: 56px; }
+  section { display: grid; gap: 16px; scroll-margin-top: calc(env(safe-area-inset-top, 0px) + 16px); }
+  section > h2 { font-size: clamp(26px, 3.6vw, 32px); font-weight: 800; }
+  section > p, .nota { max-width: 68ch; margin: 0; }
+  .abre { font-size: 17px; }
+  .nota { color: var(--suave); font-size: 14px; }
+  ul.lista, ol.lista { margin: 0; padding-left: 1.3em; display: grid; gap: 8px; max-width: 68ch; }
+  .lista li::marker { color: var(--suave); }
+
+  /* endereços */
+  .enderecos { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--linha); }
+  .enderecos li { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.3fr) minmax(0, 1fr); gap: 6px 20px;
+    align-items: center; padding: 14px 0; border-bottom: 1px solid var(--linha); }
+  .enderecos strong { font-weight: 700; }
+  .url { display: flex; align-items: center; gap: 8px; min-width: 0; }
+  .url a { font-family: var(--mono); font-size: 14px; overflow-wrap: anywhere; }
+  .copiar { flex: none; font: 600 12px var(--corpo); color: var(--suave); background: var(--papel); border: 1px solid var(--linha);
+    border-radius: 6px; padding: 4px 9px; cursor: pointer; }
+  .copiar:hover { color: var(--texto); }
+  .quem { color: var(--suave); font-size: 14px; }
+
+  /* fluxo */
+  .passos { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; counter-reset: passo; }
+  .passos li { counter-increment: passo; background: var(--papel); border: 1px solid var(--linha); border-radius: 10px; padding: 16px; display: grid; gap: 6px; align-content: start; }
+  .passos li::before { content: counter(passo); font: 800 28px/1 var(--display); font-stretch: 80%; color: var(--ambar-texto); }
+  .passos b { font-family: var(--display); font-size: 18px; font-stretch: 85%; }
+  .passos span { font-size: 14px; color: var(--suave); }
+  .fita { display: grid; gap: 10px; padding: 16px; border: 1px dashed var(--linha); border-radius: 10px; }
+  .fita .rotulo { color: var(--suave); }
+  .qrs { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+  .qrs li { font-family: var(--mono); font-size: 13px; padding: 5px 10px; border-radius: 4px; background: var(--papel); border: 1px solid var(--linha); }
+  .qrs li.ce { border-style: dashed; }
+
+  /* imprevistos */
+  .dupla { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .painel-box { background: var(--papel); border: 1px solid var(--linha); border-radius: 10px; padding: 18px; display: grid; gap: 10px; align-content: start; }
+  .painel-box h3 { font-size: 20px; font-weight: 700; }
+  .painel-box p { margin: 0; }
+
+  /* tabelas */
+  .rolagem { overflow-x: auto; border: 1px solid var(--linha); border-radius: 10px; background: var(--papel); }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  th { text-align: left; font: 600 12px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--suave);
+    padding: 12px 16px; border-bottom: 1px solid var(--linha); }
+  td { padding: 12px 16px; border-bottom: 1px solid var(--linha); vertical-align: top; }
+  tr:last-child td { border-bottom: 0; }
+  td:first-child { font-weight: 600; white-space: nowrap; }
+  td.data { font-family: var(--mono); font-size: 14px; font-weight: 400; font-variant-numeric: tabular-nums; }
+
+  /* regras */
+  .regras { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .regras ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .regras li { display: grid; grid-template-columns: 1.4em minmax(0, 1fr); gap: 6px; }
+  .sinal { font-weight: 700; }
+  .entra .sinal { color: var(--ok); } .fora .sinal { color: var(--fora); }
+
+  /* números da base */
+  .numeros { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: var(--linha);
+    border: 1px solid var(--linha); border-radius: 10px; overflow: hidden; margin: 0; }
+  .numeros div { background: var(--papel); padding: 14px 16px; display: grid; gap: 2px; }
+  .numeros dt { font-size: 13px; color: var(--suave); order: 2; }
+  .numeros dd { margin: 0; font: 800 26px/1.1 var(--display); font-stretch: 85%; order: 1; }
+
+  /* pendências */
+  .pendencias { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; max-width: 72ch; }
+  .pendencias li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: baseline; }
+  .chip { font: 600 11px var(--mono); letter-spacing: .06em; text-transform: uppercase; padding: 3px 8px; border-radius: 4px;
+    color: var(--ambar-texto); border: 1px solid var(--ambar); }
+
+  .rodape { border-top: 1px solid var(--linha); }
+  .rodape-dentro { padding-block: 22px 32px; color: var(--suave); font-size: 14px; display: flex; flex-wrap: wrap; gap: 6px 20px; justify-content: space-between; }
+
+  @media (max-width: 900px) {
+    .corpo { grid-template-columns: minmax(0, 1fr); gap: 28px; padding-block: 28px 48px; }
+    .indice { position: static; }
+    .indice ol { display: flex; flex-wrap: wrap; gap: 6px; border: 0; }
+    .indice a { border: 1px solid var(--linha); border-radius: 99px; padding: 4px 12px; margin: 0; background: var(--papel); }
+    .indice a.atual { border-color: var(--ambar); }
+    .passos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 640px) {
+    .enderecos li { grid-template-columns: minmax(0, 1fr); }
+    .passos, .dupla, .regras { grid-template-columns: minmax(0, 1fr); }
+    .numeros { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    td:first-child { white-space: normal; }
+    .faixa-dentro { padding-block: 32px 28px; }
+  }
+  .indice summary { min-height: 44px; padding: 10px 0; cursor: pointer; font-size: 14px; font-weight: 600; }
+  .indice a { min-height: 44px; display: flex; align-items: center; }
+  .copiar { min-width: 64px; min-height: 44px; }
+  .percursos a { display: inline-block; padding-block: 8px; }
+  ::selection { background: var(--ambar); color: var(--ambar-tinta); }
+</style>
+</head>
+<body>
+
+<header class="faixa">
+  <div class="faixa-dentro">
+    <p class="rotulo"><span class="ao-vivo" aria-hidden="true"></span>Apuração extraoficial · Eleições 2026 · Paraná</p>
+    <h1>Guia do <span>Apura BU</span></h1>
+    <p class="lead">O Apura BU soma os boletins de urna lidos pelos repórteres e mostra o resultado parcial no painel da rádio. Este guia mostra onde entrar, como usar no dia da eleição e o que já foi feito.</p>
+    <p class="carimbo">Resultado parcial e extraoficial. O oficial é sempre o do TSE.</p>
+    <div class="acoes">
+      <a class="botao principal" href="/painel/">Abrir o painel</a>
+      <a class="botao secundario" href="/app/">Abrir o app do celular</a>
+    </div>
+    <ul class="datas">
+      <li>No ar desde <b>14/10/2026</b></li>
+      <li>2º turno em <b>25/10/2026</b></li>
+      <li>Guia atualizado em <b>15/10/2026</b></li>
+    </ul>
+  </div>
+</header>
+
+<div class="corpo">
+  <nav class="indice" aria-label="Seções do guia">
+    <p class="rotulo">Neste guia</p>
+    <details open><summary>Na rua: repórter</summary><ol>
+      <li><a href="#celulares">Configurar celular</a></li>
+      <li><a href="#no-dia">Ler e enviar</a></li>
+      <li><a href="#imprevistos">Resolver problemas</a></li>
+    </ol></details>
+    <details open><summary>No estúdio</summary><ol>
+      <li><a href="#painel">Painel e telão</a></li>
+      <li><a href="#enderecos">Acessos e importação</a></li>
+      <li><a href="#regras">Regras da soma</a></li>
+    </ol></details>
+    <details><summary>Coordenação e histórico</summary><ol>
+      <li><a href="#como-funciona">Como funciona</a></li>
+      <li><a href="#feito">O que foi feito</a></li>
+      <li><a href="#pendencias">Pendências</a></li>
+    </ol></details>
+  </nav>
+
+  <article>
+    <section id="comece" aria-labelledby="t-comece">
+      <h2 id="t-comece">Comece pela sua tarefa</h2>
+      <ul class="lista percursos">
+        <li><a href="#no-dia"><b>Estou na rua:</b> ler a fita e confirmar o envio à rádio</a></li>
+        <li><a href="#painel"><b>Estou no estúdio:</b> acompanhar resultados, cobertura e equipe</a></li>
+        <li><a href="#celulares"><b>Coordeno a equipe:</b> configurar celulares e acessos</a></li>
+      </ul>
+    </section>
+    <section id="enderecos" aria-labelledby="t-enderecos">
+      <h2 id="t-enderecos">Endereços</h2>
+      <p class="abre">Tudo fica em apuracao.tonicoimbra.com e só funciona com HTTPS. O painel e a importação pedem o login do admin; este manual é aberto.</p>
+      <ul class="enderecos">
+        <li><strong>Este manual</strong>
+          <span class="url"><a href="/manual/">/manual/</a><button class="copiar" type="button" data-copiar="/manual/">Copiar</button></span>
+          <span class="quem">Qualquer pessoa, sem login</span></li>
+        <li><strong>Painel de acompanhamento</strong>
+          <span class="url"><a href="/painel/">/painel/</a><button class="copiar" type="button" data-copiar="/painel/">Copiar</button></span>
+          <span class="quem">Equipe com login no admin</span></li>
+        <li><strong>Painel em modo telão</strong>
+          <span class="url"><a href="/painel/?telao=1">/painel/?telao=1</a><button class="copiar" type="button" data-copiar="/painel/?telao=1">Copiar</button></span>
+          <span class="quem">Computador do estúdio, logado no admin</span></li>
+        <li><strong>App do celular</strong>
+          <span class="url"><a href="/app/">/app/</a><button class="copiar" type="button" data-copiar="/app/">Copiar</button></span>
+          <span class="quem">Repórteres, com o celular configurado pelo QR Code do admin</span></li>
+        <li><strong>Administração</strong>
+          <span class="url"><a href="/admin/">/admin/</a><button class="copiar" type="button" data-copiar="/admin/">Copiar</button></span>
+          <span class="quem">Coordenação e membros da equipe</span></li>
+        <li><strong>Importar arquivo do celular</strong>
+          <span class="url"><a href="/importar/">/importar/</a><button class="copiar" type="button" data-copiar="/importar/">Copiar</button></span>
+          <span class="quem">Equipe com login no admin</span></li>
+      </ul>
+      <p class="nota">Para dar acesso a alguém: <b>Admin → Usuários → Adicionar</b> e marque <b>Membro da equipe</b>. Isso basta para ver o painel e importar arquivos. No admin, o link <b>Ver o site</b> abre o painel.</p>
+    </section>
+
+    <section id="como-funciona" aria-labelledby="t-como">
+      <h2 id="t-como">Como funciona</h2>
+      <p class="abre">Cada boletim passa por duas conferências antes de entrar na soma: uma no celular e outra no servidor.</p>
+      <ol class="passos">
+        <li><b>Leitura</b><span>O repórter lê com o celular os QR Codes impressos no boletim, em qualquer ordem.</span></li>
+        <li><b>No celular</b><span>O app confere a cadeia de segurança dos QR Codes, guarda o boletim e o envia à rádio.</span></li>
+        <li><b>No servidor</b><span>Tudo é conferido de novo, inclusive a assinatura digital da urna. Seção repetida é descartada.</span></li>
+        <li><b>No painel</b><span>Os boletins são somados e o painel se atualiza sozinho a cada 20 segundos.</span></li>
+      </ol>
+      <div class="fita">
+        <p class="rotulo">O que o repórter lê na fita de cada urna</p>
+        <ul class="qrs" aria-label="QR Codes de um boletim">
+          <li>QRBU 1/3</li><li>QRBU 2/3</li><li>QRBU 3/3</li><li class="ce">QRCE 1/2</li><li class="ce">QRCE 2/2</li>
+        </ul>
+        <p class="nota">Os QR Codes QRBU trazem os votos (3 em cada boletim testado do 1º turno). Os 2 QRCE são o certificado da urna, que permite conferir a assinatura digital.</p>
+      </div>
+    </section>
+
+    <section id="celulares" aria-labelledby="t-celulares">
+      <h2 id="t-celulares">Antes da eleição: celulares</h2>
+      <p class="abre">Cada repórter ou equipe precisa de um cadastro próprio no admin. O celular se configura sozinho lendo um QR Code.</p>
+      <ol class="lista">
+        <li>Entre em <b>Admin → Celulares autorizados → Adicionar</b>, cadastre um registro por repórter ou equipe e salve.</li>
+        <li>Abra o cadastro salvo: aparece um <b>QR Code de configuração</b>.</li>
+        <li>O repórter aponta a câmera do celular para esse QR Code. O app abre já configurado com o servidor e o código de acesso.</li>
+        <li>No celular, use <b>Adicionar à tela inicial</b> para instalar o app.</li>
+        <li>Na aba <b>Ajustes</b> do app, toque em <b>Testar conexão</b> para confirmar.</li>
+      </ol>
+    </section>
+
+    <section id="no-dia" aria-labelledby="t-dia">
+      <h2 id="t-dia">No dia: ler e enviar</h2>
+      <p class="abre">Leia a fita e confira a confirmação de recebimento na aba Envio. Sem internet, os boletins continuam guardados neste celular.</p>
+      <ul class="lista">
+        <li>Toque em <b>Abrir câmera</b> e vá descendo pela fita do boletim. O app avisa quando a integridade foi conferida no celular. A assinatura digital é verificada pela rádio após o envio.</li>
+        <li>Leia também os 2 QR Codes do <b>certificado</b>, logo abaixo. Com eles o servidor confere a assinatura digital da urna.</li>
+        <li>No modo automático, o envio começa 5 segundos depois da leitura completa, dando tempo de ler o certificado.</li>
+        <li>No modo automático, o app tenta novamente quando a conexão volta e a cada 30 segundos. Se o código for recusado, corrija-o em Ajustes e teste a conexão.</li>
+        <li>Em <b>Ajustes → Quando enviar → Só quando eu mandar</b>, os boletins são enviados apenas ao tocar em <b>Enviar pendentes</b>. Voltar a ter internet não dispara o envio nesse modo.</li>
+        <li>Seção lida duas vezes é ignorada, no celular e no servidor.</li>
+        <li>A aba <b>Local</b> mostra o subtotal deste celular. Em <b>Envio</b>, “recebido pela rádio” confirma a entrega; “aguardando envio” indica que o boletim ainda está somente no celular.</li>
+      </ul>
+    </section>
+
+    <section id="imprevistos" aria-labelledby="t-imprevistos">
+      <h2 id="t-imprevistos">Imprevistos</h2>
+      <p class="abre">Nenhum boletim se perde sem internet, e um celular perdido é bloqueado na hora pelo admin.</p>
+      <div class="dupla">
+        <div class="painel-box">
+          <h3>Câmera bloqueada ou indisponível</h3>
+          <p>Permita o acesso à câmera nas configurações do navegador e tente novamente. Se necessário, use <b>Sem câmera? Colar o texto dos QR Codes</b>, um por linha. Textos recusados ficam no campo para correção.</p>
+        </div>
+        <div class="painel-box">
+          <h3>Código de acesso recusado</h3>
+          <p>Toque em <b>Corrigir acesso</b>, confira o código com a coordenação e salve em <b>Ajustes</b>. Use <b>Testar conexão</b> antes de enviar novamente. Os boletins continuam guardados no celular.</p>
+        </div>
+        <div class="painel-box">
+          <h3>Repórter sem internet até o fim do dia</h3>
+          <ol class="lista">
+            <li>No app, aba <b>Envio</b>, toque em <b>Salvar arquivo</b>. É gerado um arquivo <code>.json</code> com os QR Codes lidos.</li>
+            <li>O repórter entrega o arquivo na rádio.</li>
+            <li>Importe em <a href="/importar/">/importar/</a>. Tudo é validado de novo, e seções já registradas são ignoradas.</li>
+          </ol>
+        </div>
+        <div class="painel-box">
+          <h3>Celular perdido</h3>
+          <p>Em <b>Admin → Celulares autorizados</b>, desmarque <b>Ativo</b> no cadastro daquele celular. Ele para de enviar imediatamente.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="painel" aria-labelledby="t-painel">
+      <h2 id="t-painel">Painel e telão</h2>
+      <p class="abre">O painel mostra o Paraná inteiro por padrão, com presidente, governador e senador no alto, e se atualiza a cada 20 segundos.</p>
+      <p>Use os atalhos <b>Resultados</b>, <b>Cobertura</b> e <b>Equipe</b> para ir direto à informação desejada no celular. Durante a navegação por teclado, a lista em uso mantém o foco e recebe os novos dados ao sair dela. Nas dicas dos candidatos, <b>Esc</b> fecha a comparação.</p>
+      <div class="rolagem">
+        <table>
+          <thead><tr><th scope="col">Parte</th><th scope="col">O que mostra</th></tr></thead>
+          <tbody>
+            <tr><td>Topo</td><td>Urnas apuradas contra urnas esperadas, com barra de progresso; comparecimento; municípios com boletim (de 399); alertas.</td></tr>
+            <tr><td>Presidente, Governador, Senador</td><td>Nome de urna, partido, número, % dos votos válidos e votos. Em presidente e governador, uma linha marca 50% para ver se alguém vence no 1º turno.</td></tr>
+            <tr><td>Deputados</td><td>Os 10 primeiros, “ver mais” até 50 e o total por partido (nominais + legenda).</td></tr>
+            <tr><td>Urnas por município</td><td>Progresso de cada município. Clique num município para ver as escolas dele.</td></tr>
+            <tr><td>Últimos boletins</td><td>Escola, município, repórter e situação da assinatura.</td></tr>
+            <tr><td>Celulares</td><td>Boletins enviados e último envio, com alerta quando um celular passa mais de 30 minutos sem enviar.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul class="lista">
+        <li><b>Filtros:</b> eleição, município e local de votação. O filtro fica no endereço da página, então dá para salvar o link.</li>
+        <li><b>Diferença de votos:</b> ao passar o mouse sobre um candidato, aparece quantos votos o separam do anterior e do próximo.</li>
+        <li><b>Modo telão:</b> botão no topo do painel ou <a href="/painel/?telao=1">/painel/?telao=1</a>. Abre em tela cheia, com letras grandes, só com urnas, comparecimento e os três cargos principais.</li>
+        <li>O painel segue o modo claro ou escuro do computador.</li>
+      </ul>
+    </section>
+
+    <section id="regras" aria-labelledby="t-regras">
+      <h2 id="t-regras">Regras da soma</h2>
+      <p class="abre">Só entram na soma boletins oficiais do Paraná. O resto aparece nos alertas do painel.</p>
+      <div class="regras">
+        <div class="painel-box entra">
+          <h3>Entra na soma</h3>
+          <ul>
+            <li><span class="sinal" aria-hidden="true">✓</span><span>Boletins oficiais de urnas do Paraná.</span></li>
+            <li><span class="sinal" aria-hidden="true">✓</span><span>Boletim com somas internas divergentes, com alerta em vermelho para conferir o papel.</span></li>
+            <li><span class="sinal" aria-hidden="true">✓</span><span>Votos de legenda, nos válidos de deputado.</span></li>
+          </ul>
+        </div>
+        <div class="painel-box fora">
+          <h3>Fica fora da soma</h3>
+          <ul>
+            <li><span class="sinal" aria-hidden="true">✕</span><span>Boletins simulados ou de treinamento.</span></li>
+            <li><span class="sinal" aria-hidden="true">✕</span><span>Boletins de outra UF.</span></li>
+            <li><span class="sinal" aria-hidden="true">✕</span><span>A mesma seção enviada de novo.</span></li>
+          </ul>
+        </div>
+      </div>
+      <ul class="lista">
+        <li>“Urnas esperadas” vem da base de locais de votação do TSE, hoje carregada com os dados do <b>2º turno</b>.</li>
+        <li>Senador: quando cada eleitor vota em 2, o painel avisa que os percentuais somam 200%.</li>
+        <li>Todo número sai com o aviso de resultado parcial e extraoficial.</li>
+      </ul>
+    </section>
+
+    <section id="feito" aria-labelledby="t-feito">
+      <h2 id="t-feito">O que foi feito</h2>
+      <p class="abre">Em dois dias o sistema foi instalado, ganhou o painel e teve a base do TSE carregada para o 2º turno.</p>
+      <div class="rolagem">
+        <table>
+          <thead><tr><th scope="col">Data</th><th scope="col">O quê</th><th scope="col">Detalhe</th></tr></thead>
+          <tbody>
+            <tr><td class="data">15/10/2026</td><td>Manual da equipe</td><td>Este manual publicado em /manual/, aberto para qualquer pessoa da equipe.</td></tr>
+            <tr><td class="data">15/10/2026</td><td>Base do 2º turno</td><td>Locais de votação do PR recarregados para o 2º turno (25/10) e conferidos com o arquivo do TSE.</td></tr>
+            <tr><td class="data">15/10/2026</td><td>Painel e telão</td><td>Painel criado e testado no computador, no celular e no modo escuro. 13 testes automáticos passando.</td></tr>
+            <tr><td class="data">14/10/2026</td><td>Correção na importação</td><td>O arquivo do TSE repete cada seção nos dois turnos, e 328 seções do PR mudam de escola entre eles. A importação passou a carregar um turno por vez.</td></tr>
+            <tr><td class="data">14/10/2026</td><td>Base do TSE</td><td>Candidatos, partidos e locais de votação do PR importados.</td></tr>
+            <tr><td class="data">14/10/2026</td><td>Publicação</td><td>Sistema no ar em apuracao.tonicoimbra.com, com HTTPS pela Cloudflare, sem afetar os outros sites do servidor.</td></tr>
+            <tr><td class="data">14/10/2026</td><td>Instalação</td><td>Servidor da rádio instalado e testado com 3 boletins reais do 1º turno de 2026 antes de ir ao ar.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h3>Base do TSE carregada hoje</h3>
+      <dl class="numeros">
+        <div><dt>Candidatos (Brasil)</dt><dd>20.780</dd></div>
+        <div><dt>Candidatos a presidente</dt><dd>13</dd></div>
+        <div><dt>Partidos</dt><dd>30</dd></div>
+        <div><dt>Locais de votação no PR (2º turno)</dt><dd>4.841</dd></div>
+        <div><dt>Urnas no PR</dt><dd>27.142</dd></div>
+        <div><dt>Eleitores no PR</dt><dd>8.609.026</dd></div>
+      </dl>
+      <p class="nota">Escola de referência dos testes: Colégio Estadual Nóbrega da Cunha, em Bandeirantes (zona 58), com 13 urnas e 3.368 eleitores.</p>
+    </section>
+
+    <section id="pendencias" aria-labelledby="t-pendencias">
+      <h2 id="t-pendencias">Pendências</h2>
+      <p class="abre">O sistema está pronto para o 2º turno. Antes de 25/10, cadastre os celulares e teste o telão no estúdio.</p>
+      <ul class="pendencias">
+        <li><span class="chip">Pendente</span><span>Fazer uma cópia de segurança do banco antes e depois da apuração, porque não existe cópia automática.</span></li>
+        <li><span class="chip">Pendente</span><span>Apagar os arquivos temporários da importação do TSE no servidor (cerca de 180 MB).</span></li>
+        <li><span class="chip">Pendente</span><span>Ajustar a importação e os testes para apagarem sozinhos os arquivos temporários.</span></li>
+      </ul>
+    </section>
+  </article>
+</div>
+
+<footer class="rodape">
+  <div class="rodape-dentro">
+    <span>Apura BU · apuração parcial e extraoficial a partir dos boletins de urna</span>
+    <span>Resultado oficial: TSE</span>
+  </div>
+</footer>
+
+<script>
+  // Copiar endereço: área de transferência quando permitida, senão seleciona o texto do link
+  document.querySelectorAll("[data-copiar]").forEach((botao) => {
+    botao.addEventListener("click", async () => {
+      const texto = new URL(botao.dataset.copiar, location.origin).href;
+      try {
+        await navigator.clipboard.writeText(texto);
+        botao.textContent = "Copiado";
+      } catch {
+        const link = botao.previousElementSibling;
+        const faixa = document.createRange();
+        faixa.selectNodeContents(link);
+        const sel = getSelection();
+        sel.removeAllRanges();
+        sel.addRange(faixa);
+        botao.textContent = "Selecionado";
+      }
+      setTimeout(() => { botao.textContent = "Copiar"; }, 1600);
+    });
+  });
+
+  // Índice: marca a seção que está na tela
+  const links = new Map([...document.querySelectorAll(".indice a")].map((a) => [a.getAttribute("href").slice(1), a]));
+  if ("IntersectionObserver" in window) {
+    const obs = new IntersectionObserver((entradas) => {
+      for (const e of entradas) {
+        if (!e.isIntersecting) continue;
+        links.forEach((a) => { a.classList.remove("atual"); a.removeAttribute("aria-current"); });
+        const atual = links.get(e.target.id);
+        atual?.classList.add("atual"); atual?.setAttribute("aria-current", "location");
+      }
+    }, { rootMargin: "-20% 0px -70% 0px" });
+    document.querySelectorAll("article section").forEach((s) => obs.observe(s));
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+{% extends "admin/base.html" %}
+{% block title %}{{ title }} | Apura BU{% endblock %}
+{% block branding %}<div id="site-name"><a href="{% url 'admin:index' %}">Apura BU — servidor da rádio</a></div>{% endblock %}
+{% block nav-global %}
+<nav class="apura-nav" aria-label="Áreas do Apura BU">
+  {% if user.is_staff %}<a href="{% url 'painel' %}">Painel</a><a href="{% url 'importar' %}">Importar boletins</a>{% endif %}
+  <a href="{% url 'manual' %}">Manual</a>
+</nav>
+{% endblock %}
+{% block extrastyle %}{{ block.super }}
+<style>
+  :root { --primary: #0f1b2d; --secondary: #142033; --accent: #e8a317; --link-fg: #1f5ea8; }
+  html[data-theme="dark"] { --link-fg: #8cbcf2; }
+  @media (prefers-color-scheme: dark) { html[data-theme="auto"] { --link-fg: #8cbcf2; } }
+  body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; line-height: 1.5; }
+  h1 { font-size: 26px; font-weight: 700; line-height: 1.2; text-wrap: balance; }
+  h2 { line-height: 1.3; }
+  #header { gap: 12px 24px; flex-wrap: wrap; }
+  #site-name { font-size: 20px; font-weight: 700; }
+  .apura-nav { display: flex; flex-wrap: wrap; gap: 8px 20px; }
+  .apura-nav a { display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; }
+  #content a { text-underline-offset: 3px; }
+  :focus-visible { outline: 3px solid var(--link-fg); outline-offset: 3px; }
+  ::selection { background: #e8a317; color: #1a1300; }
+  input, textarea, select { caret-color: var(--body-fg); }
+  input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), select, textarea { font-size: 16px; min-height: 44px; box-sizing: border-box; }
+  input[type="file"] { max-width: 100%; padding-block: 8px; }
+  input[type="file"]::file-selector-button { min-height: 44px; margin-right: 12px; padding: 8px 12px; background: var(--body-bg); color: var(--body-fg); border: 1px solid var(--body-quiet-color); border-radius: 6px; cursor: pointer; }
+  button, .button, input[type="submit"], .submit-row input, #changelist .actions .button { min-height: 44px; padding: 10px 16px; font-size: 14px; box-sizing: border-box; }
+  button:disabled { cursor: wait; opacity: .7; }
+  td, th { font-variant-numeric: tabular-nums; }
+  #changelist-filter a { padding-block: 8px; }
+  .messagelist li { line-height: 1.6; }
+  .importacao { max-width: 70ch; }
+  .importacao p { font-size: 16px; }
+  .importacao label { font-weight: 600; }
+  .importacao form { padding: 20px 0; border-block: 1px solid var(--hairline-color); }
+  .importacao a { display: inline-flex; align-items: center; min-height: 44px; }
+  @media (max-width: 1024px) { #header { flex-wrap: nowrap; } .apura-nav { flex-basis: auto; width: 100%; } }
+  @media (max-width: 767px) { #header { padding: 16px; } #content { padding: 20px 16px; } .aligned label { font-size: 16px; } }
+</style>
+{% endblock %}

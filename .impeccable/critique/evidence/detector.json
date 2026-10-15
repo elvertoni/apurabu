@@ -1,0 +1,83 @@
+[
+  {
+    "antipattern": "low-contrast",
+    "name": "Low contrast text",
+    "description": "Text does not meet WCAG AA contrast requirements (4.5:1 for body, 3:1 for large text). Increase the contrast between text and background.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "/home/hermes/workspace/projetos/trabalho/apura-bu/pwa/index.html",
+    "line": 0,
+    "snippet": "3.0:1 (need 4.5:1) — text #c0392b on #142033"
+  },
+  {
+    "antipattern": "all-caps-body",
+    "name": "All-caps body text",
+    "description": "Long passages in uppercase are hard to read. We recognize words by shape (ascenders and descenders), which all-caps removes. Reserve uppercase for short labels and headings.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "/home/hermes/workspace/projetos/trabalho/apura-bu/servidor/boletins/templates/boletins/manual.html",
+    "line": 0,
+    "snippet": "text-transform: uppercase on 46 chars of body text"
+  },
+  {
+    "antipattern": "cramped-padding",
+    "name": "Cramped padding",
+    "description": "Text is too close to the edge of its container. Two shapes: (1) an element with its own text where the space between the rendered text and the border box is too small for the font size, and (2) a wrapper whose children's text lands flush against a visible boundary (border, outline, or non-transparent background) with nothing to inset it. Add at least 8px (ideally 12–16px) of space inside bordered, outlined, or colored containers.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "/home/hermes/workspace/projetos/trabalho/apura-bu/servidor/boletins/templates/boletins/manual.html",
+    "line": 0,
+    "snippet": "<ol>: children flush against border-left on left (no inset)"
+  },
+  {
+    "antipattern": "all-caps-body",
+    "name": "All-caps body text",
+    "description": "Long passages in uppercase are hard to read. We recognize words by shape (ascenders and descenders), which all-caps removes. Reserve uppercase for short labels and headings.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "/home/hermes/workspace/projetos/trabalho/apura-bu/servidor/boletins/templates/boletins/manual.html",
+    "line": 0,
+    "snippet": "text-transform: uppercase on 40 chars of body text"
+  },
+  {
+    "antipattern": "cramped-padding",
+    "name": "Cramped padding",
+    "description": "Text is too close to the edge of its container. Two shapes: (1) an element with its own text where the space between the rendered text and the border box is too small for the font size, and (2) a wrapper whose children's text lands flush against a visible boundary (border, outline, or non-transparent background) with nothing to inset it. Add at least 8px (ideally 12–16px) of space inside bordered, outlined, or colored containers.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "/home/hermes/workspace/projetos/trabalho/apura-bu/servidor/boletins/templates/boletins/manual.html",
+    "line": 0,
+    "snippet": "<div> \"rolagem\": children flush against border+bg on all sides (no inset)"
+  },
+  {
+    "antipattern": "cramped-padding",
+    "name": "Cramped padding",
+    "description": "Text is too close to the edge of its container. Two shapes: (1) an element with its own text where the space between the rendered text and the border box is too small for the font size, and (2) a wrapper whose children's text lands flush against a visible boundary (border, outline, or non-transparent background) with nothing to inset it. Add at least 8px (ideally 12–16px) of space inside bordered, outlined, or colored containers.",
+    "severity": "warning",
+    "category": "quality",
+    "file": "/home/hermes/workspace/projetos/trabalho/apura-bu/servidor/boletins/templates/boletins/manual.html",
+    "line": 0,
+    "snippet": "<div> \"rolagem\": children flush against border+bg on all sides (no inset)"
+  },
+  {
+    "antipattern": "aphoristic-cadence",
+    "name": "Aphoristic-cadence copy",
+    "description": "Three or more sections landing on a short rebuttal sentence (\"X. No Y.\" / \"X. Just Y.\") or a manufactured-contrast aphorism (\"Not a feature. A platform.\") reads as AI cadence, not voice. Once is fine; the pattern is the tell.",
+    "severity": "warning",
+    "category": "slop",
+    "file": "/home/hermes/workspace/projetos/trabalho/apura-bu/servidor/boletins/templates/boletins/manual.html",
+    "line": 0,
+    "snippet": "3 aphoristic constructions: \"Isso basta para ver o painel e importar arquivos. No admin, o link Ver o site ab\""
+  },
+  {
+    "antipattern": "gpt-thin-border-wide-shadow",
+    "name": "Hairline border with wide shadow",
+    "description": "A hairline border paired with a wide, diffuse shadow is a recurring generated-UI signature. Commit to one — a defined edge or a soft elevation — rather than both at once.",
+    "severity": "advisory",
+    "category": "slop",
+    "file": "/home/hermes/workspace/projetos/trabalho/apura-bu/servidor/boletins/templates/boletins/painel.html",
+    "line": 0,
+    "snippet": "1px border + 24px shadow blur",
+    "advisory": true
+  }
+]

@@ -1,0 +1,308 @@
+{
+  "contrastes": [
+    {
+      "theme": "light",
+      "valores": [
+        {
+          "fg": "--ok",
+          "bg": "--cartao",
+          "ratio": 7.173707552026932
+        },
+        {
+          "fg": "--erro",
+          "bg": "--cartao",
+          "ratio": 6.598887772494332
+        },
+        {
+          "fg": "--alerta",
+          "bg": "--cartao",
+          "ratio": 6.492278532784264
+        },
+        {
+          "fg": "--ok",
+          "bg": "--ok-suave",
+          "ratio": 6.2915647192937465
+        },
+        {
+          "fg": "--erro",
+          "bg": "--erro-suave",
+          "ratio": 5.722343155995371
+        },
+        {
+          "fg": "--alerta",
+          "bg": "--alerta-suave",
+          "ratio": 5.813720013098652
+        },
+        {
+          "fg": "--suave",
+          "bg": "--fundo",
+          "ratio": 4.981685515596485
+        },
+        {
+          "fg": "--ok-fundo",
+          "bg": "white",
+          "ratio": 7.0183711615128095
+        },
+        {
+          "fg": "--erro-fundo",
+          "bg": "white",
+          "ratio": 7.05925446816891
+        }
+      ]
+    },
+    {
+      "theme": "dark",
+      "valores": [
+        {
+          "fg": "--ok",
+          "bg": "--cartao",
+          "ratio": 9.342484386104951
+        },
+        {
+          "fg": "--erro",
+          "bg": "--cartao",
+          "ratio": 8.11138358542376
+        },
+        {
+          "fg": "--alerta",
+          "bg": "--cartao",
+          "ratio": 9.761155316176872
+        },
+        {
+          "fg": "--ok",
+          "bg": "--ok-suave",
+          "ratio": 6.980722915198428
+        },
+        {
+          "fg": "--erro",
+          "bg": "--erro-suave",
+          "ratio": 6.78722270970081
+        },
+        {
+          "fg": "--alerta",
+          "bg": "--alerta-suave",
+          "ratio": 7.902601021006173
+        },
+        {
+          "fg": "--suave",
+          "bg": "--fundo",
+          "ratio": 7.2428367379605545
+        },
+        {
+          "fg": "--ok-fundo",
+          "bg": "white",
+          "ratio": 7.0183711615128095
+        },
+        {
+          "fg": "--erro-fundo",
+          "bg": "white",
+          "ratio": 7.05925446816891
+        }
+      ]
+    }
+  ],
+  "results": [
+    {
+      "name": "Texto inválido preservado e anunciado",
+      "pass": true
+    },
+    {
+      "name": "Descarte incompleto pede confirmação e permite cancelar",
+      "pass": true
+    },
+    {
+      "name": "Modo manual não envia por leitura, reconexão ou intervalo",
+      "pass": true
+    },
+    {
+      "name": "Modo manual preservado após salvar ajustes e reiniciar",
+      "pass": true
+    },
+    {
+      "name": "Envio explícito recusado mostra ação persistente",
+      "pass": true
+    },
+    {
+      "name": "Correção de acesso, anúncio e entrega confirmada",
+      "pass": true
+    },
+    {
+      "name": "Envio automático segue funcionando",
+      "pass": true
+    },
+    {
+      "name": "PWA ler light: layout e estado acessível",
+      "pass": true
+    },
+    {
+      "name": "PWA local light: layout e estado acessível",
+      "pass": true
+    },
+    {
+      "name": "PWA fila light: layout e estado acessível",
+      "pass": true
+    },
+    {
+      "name": "PWA ajustes light: layout e estado acessível",
+      "pass": true
+    },
+    {
+      "name": "PWA ler dark: layout e estado acessível",
+      "pass": true
+    },
+    {
+      "name": "PWA local dark: layout e estado acessível",
+      "pass": true
+    },
+    {
+      "name": "PWA fila dark: layout e estado acessível",
+      "pass": true
+    },
+    {
+      "name": "PWA ajustes dark: layout e estado acessível",
+      "pass": true
+    },
+    {
+      "name": "Contrastes semânticos light atendem 4,5:1",
+      "pass": true
+    },
+    {
+      "name": "Contrastes semânticos dark atendem 4,5:1",
+      "pass": true
+    },
+    {
+      "name": "Painel mantém o mesmo nó focado após atualização",
+      "pass": true
+    },
+    {
+      "name": "Tooltip fecha com Escape e permanece ao receber ponteiro",
+      "pass": true
+    },
+    {
+      "name": "Navegação direta para equipe",
+      "pass": true
+    },
+    {
+      "name": "/painel/ 360px: sem overflow",
+      "pass": true
+    },
+    {
+      "name": "/painel/?telao=1 360px: sem overflow",
+      "pass": true
+    },
+    {
+      "name": "/manual/ 360px: sem overflow",
+      "pass": true
+    },
+    {
+      "name": "/importar/ 360px: sem overflow",
+      "pass": true
+    },
+    {
+      "name": "/admin/ 360px: sem overflow",
+      "pass": true
+    },
+    {
+      "name": "/admin/boletins/boletim/ 360px: sem overflow",
+      "pass": true
+    },
+    {
+      "name": "/admin/boletins/eleicao/ 360px: sem overflow",
+      "pass": true
+    },
+    {
+      "name": "/admin/boletins/dispositivo/1/change/ 360px: sem overflow",
+      "pass": true
+    },
+    {
+      "name": "/painel/ 768px: sem overflow",
+      "pass": true
+    },
+    {
+      "name": "/painel/?telao=1 768px: sem overflow",
+      "pass": true
+    },
+    {
+      "name": "/manual/ 768px: sem overflow",
+      "pass": true
+    },
+    {
+      "name": "/importar/ 768px: sem overflow",
+      "pass": true
+    },
+    {
+      "name": "/admin/ 768px: sem overflow",
+      "pass": true
+    },
+    {
+      "name": "/admin/boletins/boletim/ 768px: sem overflow",
+      "pass": true
+    },
+    {
+      "name": "/admin/boletins/eleicao/ 768px: sem overflow",
+      "pass": true
+    },
+    {
+      "name": "/admin/boletins/dispositivo/1/change/ 768px: sem overflow",
+      "pass": true
+    },
+    {
+      "name": "/painel/ 1440px: sem overflow",
+      "pass": true
+    },
+    {
+      "name": "/painel/?telao=1 1440px: sem overflow",
+      "pass": true
+    },
+    {
+      "name": "/manual/ 1440px: sem overflow",
+      "pass": true
+    },
+    {
+      "name": "/importar/ 1440px: sem overflow",
+      "pass": true
+    },
+    {
+      "name": "/admin/ 1440px: sem overflow",
+      "pass": true
+    },
+    {
+      "name": "/admin/boletins/boletim/ 1440px: sem overflow",
+      "pass": true
+    },
+    {
+      "name": "/admin/boletins/eleicao/ 1440px: sem overflow",
+      "pass": true
+    },
+    {
+      "name": "/admin/boletins/dispositivo/1/change/ 1440px: sem overflow",
+      "pass": true
+    },
+    {
+      "name": "Checkbox da eleição tem nome contextual",
+      "pass": true
+    },
+    {
+      "name": "Importação tem rótulo, seleção e erro sem sucesso enganoso",
+      "pass": true
+    },
+    {
+      "name": "Admin e importação usam tema compartilhado no escuro",
+      "pass": true
+    },
+    {
+      "name": "Texto ampliado mantém layout móvel do painel",
+      "pass": true
+    },
+    {
+      "name": "PWA reabre offline com service worker atualizado",
+      "pass": true
+    }
+  ],
+  "total": 49,
+  "passed": 49,
+  "failed": [],
+  "pageErrors": [],
+  "screenshots": 18,
+  "method": "Regressões de comportamento e inspeção em lote; confirmação direcionada do cabeçalho após corrigir overflow. Chromium, dados locais, 360/390/768/1440 CSS px."
+}
