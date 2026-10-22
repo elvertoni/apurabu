@@ -20,7 +20,7 @@ Repositório Git: `https://github.com/elvertoni/apurabu.git`, branch principal `
 ## Comandos
 
 ```bash
-# Testes do servidor (11). Dependências em servidor/requirements.txt
+# Testes do servidor (22). Dependências em servidor/requirements.txt
 cd servidor && python manage.py test boletins
 python manage.py test boletins.tests.ApiBoletinsTest.test_ping   # um teste só
 
@@ -53,7 +53,7 @@ O JSON de teste mapeia `nome da foto -> [textos dos QR]` (3 `QRBU` + 2 `QRCE` po
 
 ## Arquitetura
 
-**`bu_qrcode.py` e `pwa/bu.js` são espelhos.** Mudança no parsing, nas tabelas (`CARGOS`, totais) ou na validação precisa ir nos dois. Diferenças intencionais:
+**`bu_qrcode.py` e `pwa/bu.js` são espelhos.** Mudança no parsing, nas tabelas (`CARGOS`, totais, `CAMPOS_CABECALHO`) ou na validação precisa ir nos dois. `CAMPOS_CABECALHO` confere o formato dos campos do cabeçalho (`LOCA`, `MUNI`, `UNFE`...): quem forja um QR consegue recalcular a cadeia de hashes, e esses campos vão para a tela do app. Diferenças intencionais:
 - JS não verifica a assinatura ECDSA; só a cadeia de hashes. A assinatura é verificada no servidor, que é a fonte da verdade.
 - JS `adicionar()` retorna `'novo' | 'repetido' | 'conflito'`; Python levanta `ErroBU`.
 - Campos do cabeçalho: `snake_case` no Python (`municipio_tse`), `camelCase` no JS (`municipioTse`).
@@ -75,7 +75,7 @@ O JSON de teste mapeia `nome da foto -> [textos dos QR]` (3 `QRBU` + 2 `QRCE` po
 - Ao alterar arquivos do app, suba `VERSAO` (`apura-bu-vN`).
 - `cache.addAll(ARQUIVOS)` é tudo-ou-nada: se um arquivo da lista não existir, a instalação falha e o app deixa de funcionar offline. Mantenha `ARQUIVOS` igual aos arquivos reais. O nome esperado do WASM é exatamente `vendor/zxing_reader.wasm`.
 
-**Configuração por link:** o servidor mostra um QR com `/app/#cfg=<JSON em base64url>` (`servidor`, `token`, `reporter`). Aberto direto em `https://…/app/` sem configuração, o app usa `location.origin` como servidor.
+**Configuração por link:** o servidor mostra um QR com `/app/#cfg=<JSON em base64url>` (`servidor`, `token`, `reporter`). Aberto direto em `https://…/app/` sem configuração, o app usa `location.origin` como servidor. O app pede confirmação quando o link aponta para outro servidor que não `location.origin` ou troca uma configuração já existente. No admin, a ação "Gerar novo código de acesso" troca o token sem perder os boletins do celular.
 
 ## Painel (`/painel/`)
 

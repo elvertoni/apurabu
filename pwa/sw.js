@@ -1,5 +1,5 @@
 // Service worker: guarda o app no celular para abrir e ler QR Codes sem internet.
-const VERSAO = "apura-bu-v3";
+const VERSAO = "apura-bu-v4";
 const ARQUIVOS = [
   "./", "index.html", "app.css", "app.js", "bu.js", "db.js", "manifest.webmanifest",
   "icons/icone.svg", "icons/icone-192.png", "icons/icone-512.png",

@@ -66,8 +66,10 @@ Em produção desde 14/10/2026 em **https://apuracao.tonicoimbra.com**.
 2. Entregue o arquivo na rádio.
 3. Importe em https://apuracao.tonicoimbra.com/importar/. Todos os QR Codes são validados de novo, e seções já registradas são ignoradas.
 
-### 4. Celular perdido
+### 4. Celular perdido ou link vazado
 Em **Admin → Celulares autorizados**, desmarque **Ativo**. O celular para de enviar na hora.
+
+Se o link de configuração caiu em mãos erradas, marque o celular na lista, escolha a ação **Gerar novo código de acesso** e mostre o novo QR Code ao repórter. O código antigo para de funcionar, e os boletins já enviados continuam ligados ao celular.
 
 ### 5. Acompanhar
 Use o painel. Os detalhes estão na próxima seção.

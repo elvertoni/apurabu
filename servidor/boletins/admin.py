@@ -3,10 +3,10 @@ import json
 
 import segno
 from django import forms
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.utils.html import format_html, mark_safe
 
-from .models import Boletim, Candidato, Dispositivo, Eleicao, LocalVotacao, Municipio, Partido
+from .models import Boletim, Candidato, Dispositivo, Eleicao, LocalVotacao, Municipio, Partido, gerar_token
 
 
 def link_configuracao(request, d):
@@ -21,10 +21,20 @@ class DispositivoAdmin(admin.ModelAdmin):
     list_filter = ['ativo']
     readonly_fields = ['token', 'configurar_celular', 'criado_em', 'ultimo_envio']
     fields = ['nome', 'ativo', 'configurar_celular', 'token', 'criado_em', 'ultimo_envio']
+    actions = ['trocar_codigo']
 
     def get_form(self, request, obj=None, **kwargs):
         self._request = request
         return super().get_form(request, obj, **kwargs)
+
+    @admin.action(description='Gerar novo código de acesso (o código antigo para de funcionar)')
+    def trocar_codigo(self, request, queryset):
+        # troca o token mantendo o cadastro: os boletins já enviados continuam ligados ao celular
+        for d in queryset:
+            d.token = gerar_token()
+            d.save(update_fields=['token'])
+        self.message_user(request, f'{queryset.count()} código(s) trocado(s). Abra cada celular e mostre o novo '
+                                   'QR Code de configuração ao repórter.', messages.SUCCESS)
 
     @admin.display(description='boletins enviados')
     def qtd_boletins(self, obj):

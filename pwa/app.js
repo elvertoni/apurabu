@@ -280,7 +280,7 @@ async function desenharLocal() {
       const c = doLocal[0].bu.cabecalho;
       const esperadas = urnasLocal(c);
       const qtd = esperadas ? `${doLocal.length} de ${esperadas} urnas` : `${doLocal.length} urnas`;
-      return `<option value="${l}">${esc(nomeLocal(c))} · zona ${c.zona} (${qtd})</option>`;
+      return `<option value="${esc(l)}">${esc(nomeLocal(c))} · zona ${esc(c.zona)} (${qtd})</option>`;
     }).join("");
   sel.value = locais.includes(atual) ? atual : (locais.length === 1 ? locais[0] : "");
 
@@ -450,8 +450,8 @@ async function desenharFila() {
   $("#lista-fila").innerHTML = regs.map((r) => {
     const c = r.bu.cabecalho;
     const hora = new Date(r.lidoEm).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
-    return `<li><div><b>Zona ${c.zona} · Seção ${c.secao}</b>
-      <small>lida às ${hora} · local ${c.local}${r.certificado ? " · com certificado" : ""}${r.erro ? " · " + esc(r.erro) : ""}</small></div>
+    return `<li><div><b>Zona ${esc(c.zona)} · Seção ${esc(c.secao)}</b>
+      <small>lida às ${hora} · local ${esc(c.local)}${r.certificado ? " · com certificado" : ""}${r.erro ? " · " + esc(r.erro) : ""}</small></div>
       <span class="status ${r.status}">${{ enviado: "recebido pela rádio", pendente: "aguardando envio", erro: "recusado" }[r.status]}</span></li>`;
   }).join("") || `<p class="dica" style="text-align:center">Nenhum boletim lido ainda.</p>`;
 }
@@ -550,9 +550,20 @@ $("#btn-limpar").addEventListener("click", async () => {
     try {
       const b64 = m[1].replace(/-/g, "+").replace(/_/g, "/");
       const dados = JSON.parse(atob(b64 + "=".repeat((4 - b64.length % 4) % 4)));
-      ajustes.gravar({ ...cfg, servidor: dados.servidor || cfg.servidor, token: dados.token || cfg.token,
-        reporter: dados.reporter || cfg.reporter });
-      setTimeout(() => toast(`Celular configurado: ${dados.reporter || "ok"}`, "ok"), 300);
+      const servidor = dados.servidor ? new URL(dados.servidor).origin : cfg.servidor;
+      // O QR da rádio sempre aponta para o próprio servidor. Outro endereço pode ser um link falso
+      // que desvia os boletins; trocar uma configuração já existente também pede confirmação.
+      const outroServidor = dados.servidor && servidor !== location.origin;
+      const trocaConfig = cfg.token && (servidor !== cfg.servidor || (dados.token && dados.token !== cfg.token));
+      const aviso = outroServidor
+        ? `Atenção: este link manda os boletins para ${new URL(servidor).host}, que não é o endereço deste app (${location.host}).\n\nSó continue se a coordenação da rádio confirmou este endereço.`
+        : `Este link troca a configuração atual deste celular (${cfg.reporter || "sem nome"}) por ${dados.reporter || "outra"}.`;
+      if ((outroServidor || trocaConfig) && !confirm(aviso + "\n\nAplicar a nova configuração?")) {
+        setTimeout(() => toast("Configuração mantida", "ok"), 300);
+      } else {
+        ajustes.gravar({ ...cfg, servidor, token: dados.token || cfg.token, reporter: dados.reporter || cfg.reporter });
+        setTimeout(() => toast(`Celular configurado: ${dados.reporter || "ok"}`, "ok"), 300);
+      }
     } catch { setTimeout(() => toast("Link de configuração inválido", "erro"), 300); }
     history.replaceState(null, "", location.pathname);
   } else if (!cfg.servidor && location.pathname.startsWith("/app/") && location.protocol === "https:") {

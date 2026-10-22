@@ -90,6 +90,11 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
+    # HSTS só neste subdomínio (sem includeSubDomains/preload): fácil de desfazer zerando a variável
+    SECURE_HSTS_SECONDS = int(os.environ.get('DJANGO_HSTS_SECONDS', 86400))
+# W008: HTTP→HTTPS é feito pelo Cloudflare antes de chegar aqui.
+# W005/W021: HSTS fica restrito a este subdomínio de propósito.
+SILENCED_SYSTEM_CHECKS = ['security.W008', 'security.W005', 'security.W021']
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 20 * 1024 * 1024  # arquivo exportado do celular
 

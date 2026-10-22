@@ -1,4 +1,5 @@
 import json
+import logging
 import mimetypes
 import re
 from pathlib import Path
@@ -17,6 +18,8 @@ from . import painel
 from .models import Boletim, Candidato, Dispositivo, Eleicao, LocalVotacao, Municipio, Partido
 from .servicos import BoletimRecusado, registrar_boletim, totalizar
 
+log = logging.getLogger('boletins')
+
 mimetypes.add_type('application/wasm', '.wasm')
 mimetypes.add_type('application/manifest+json', '.webmanifest')
 
@@ -31,6 +34,9 @@ class TokenMixin:
         token = cab[6:].strip() if cab.startswith('Token ') else ''
         self.dispositivo = Dispositivo.objects.filter(token=token, ativo=True).first() if token else None
         if not self.dispositivo and not request.user.is_staff:
+            if token:  # nunca registra o código, só de onde veio a tentativa
+                log.warning('Código de acesso recusado em %s (IP %s)', request.path,
+                            request.headers.get('CF-Connecting-IP') or request.META.get('REMOTE_ADDR'))
             return JsonResponse({'detail': 'Código de acesso inválido ou desativado'}, status=401)
         return super().dispatch(request, *args, **kwargs)
 

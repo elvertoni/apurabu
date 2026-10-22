@@ -14,6 +14,13 @@ const TIPO = { 0: "majoritario", 1: "proporcional", 2: "consulta" };
 const MUNICIPAIS = new Set([11, 13]);
 const TOTAIS = new Set(["APTA", "APTS", "APTT", "NOMI", "LEGC", "BRAN", "NULO", "TOTC"]);
 const RE_CAB = /^(QRBU|QRCE):(\d+):(\d+) /;
+// Formato dos campos do cabeçalho que viram chave, filtro ou texto na tela.
+// Barra QR forjado com HTML ou texto livre nesses campos. [regex, obrigatório]
+const CAMPOS_CABECALHO = {
+  PLEI: [/^\d{1,6}$/, true], TURN: [/^\d{1,2}$/, true], UNFE: [/^[A-Z]{2}$/, true],
+  MUNI: [/^\d{1,6}$/, true], ZONA: [/^\d{1,4}$/, true], SECA: [/^\d{1,4}$/, true],
+  LOCA: [/^\d{1,8}$/, false], IDUE: [/^\d{1,12}$/, false], DTPL: [/^\d{8}$/, false],
+};
 
 export class ErroBU extends Error {}
 
@@ -124,6 +131,10 @@ export function interpretar(dados) {
     else if (/^\d+$/.test(k)) cargo.candidatos[+k] = +v;
   }
 
+  for (const [k, [padrao, obrigatorio]] of Object.entries(CAMPOS_CABECALHO)) {
+    if (!(k in cab)) { if (obrigatorio) throw new ErroBU(`Cabeçalho do boletim sem ${k}`); }
+    else if (!padrao.test(cab[k])) throw new ErroBU(`Cabeçalho do boletim com ${k} inválido`);
+  }
   for (const c of cargos) conferir(c);
   const codigos = cargos.map((c) => c.codigo);
   const cabecalho = {

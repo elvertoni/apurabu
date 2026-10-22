@@ -12,6 +12,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
 from django.test import TestCase
 
+from .bu_qrcode import ErroBU, interpretar
 from .models import Boletim, Candidato, Dispositivo, LocalVotacao, Municipio
 
 DADOS = Path(__file__).parent / 'dados_teste' / 'bus_reais_1turno_2026.json'
@@ -85,6 +86,42 @@ class ApiBoletinsTest(TestCase):
         self.disp.ativo = False
         self.disp.save()
         self.assertEqual(self.enviar(bus_reais()[0]).status_code, 401)
+
+    def test_codigo_recusado_vai_para_o_log_sem_o_codigo(self):
+        with self.assertLogs('boletins', 'WARNING') as logs:
+            r = self.client.get('/api/ping/', HTTP_AUTHORIZATION='Token codigo-errado-123')
+        self.assertEqual(r.status_code, 401)
+        self.assertNotIn('codigo-errado-123', logs.output[0])
+
+    def test_trocar_codigo_pelo_admin(self):
+        self.enviar(bus_reais()[0])
+        User.objects.create_superuser('admin', 'a@a.com', 'senha-teste-123')
+        self.client.login(username='admin', password='senha-teste-123')
+        antigo = self.disp.token
+        r = self.client.post('/admin/boletins/dispositivo/', {'action': 'trocar_codigo', '_selected_action': [self.disp.pk]})
+        self.assertEqual(r.status_code, 302)
+        self.client.logout()
+        self.disp.refresh_from_db()
+        self.assertNotEqual(self.disp.token, antigo)
+        self.assertEqual(self.disp.boletim_set.count(), 1)  # boletins continuam ligados ao celular
+        self.assertEqual(self.client.get('/api/ping/', HTTP_AUTHORIZATION=f'Token {antigo}').status_code, 401)
+        self.assertEqual(self.client.get('/api/ping/', HTTP_AUTHORIZATION=f'Token {self.disp.token}').status_code, 200)
+
+
+class CabecalhoTest(TestCase):
+    CAB = 'PLEI:3220 TURN:1 UNFE:PR MUNI:74454 ZONA:58 SECA:7 LOCA:{} IDEL:6259 CARG:6 TIPO:1'
+
+    def test_cabecalho_valido(self):
+        self.assertEqual(interpretar(self.CAB.format('1023'))['cabecalho']['local'], '1023')
+
+    def test_recusa_html_no_cabecalho(self):
+        # QR forjado: a cadeia de hashes pode ser recalculada, então o formato dos campos é conferido
+        with self.assertRaisesMessage(ErroBU, 'LOCA inválido'):
+            interpretar(self.CAB.format('<svg/onload=alert(1)>'))
+
+    def test_recusa_cabecalho_sem_secao(self):
+        with self.assertRaisesMessage(ErroBU, 'sem SECA'):
+            interpretar(self.CAB.format('1023').replace('SECA:7 ', ''))
 
     def test_importar_arquivo_do_celular(self):
         User.objects.create_superuser('admin', 'a@a.com', 'senha-teste-123')

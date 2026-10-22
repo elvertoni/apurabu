@@ -48,6 +48,14 @@ TOTAIS_CARGO = {"APTA", "APTS", "APTT", "NOMI", "LEGC", "BRAN", "NULO", "TOTC"}
 
 _RE_CAB = re.compile(r"^(QRBU|QRCE):(\d+):(\d+) ")
 
+# Formato dos campos do cabeçalho que viram chave, filtro ou texto na tela.
+# Barra QR forjado com HTML ou texto livre nesses campos. None = campo opcional.
+CAMPOS_CABECALHO = {
+    "PLEI": (r"\d{1,6}", True), "TURN": (r"\d{1,2}", True), "UNFE": (r"[A-Z]{2}", True),
+    "MUNI": (r"\d{1,6}", True), "ZONA": (r"\d{1,4}", True), "SECA": (r"\d{1,4}", True),
+    "LOCA": (r"\d{1,8}", False), "IDUE": (r"\d{1,12}", False), "DTPL": (r"\d{8}", False),
+}
+
 
 class ErroBU(Exception):
     pass
@@ -221,6 +229,13 @@ def interpretar(dados: str) -> dict:
             cargo["candidatos"][int(k)] = int(v)
         else:
             cargo.setdefault("outros", {})[k] = v
+
+    for k, (padrao, obrigatorio) in CAMPOS_CABECALHO.items():
+        if k not in cab:
+            if obrigatorio:
+                raise ErroBU(f"Cabeçalho do boletim sem {k}")
+        elif not re.fullmatch(padrao, cab[k]):
+            raise ErroBU(f"Cabeçalho do boletim com {k} inválido")
 
     cabecalho = {
         "origem": ORIGENS.get(cab.get("ORIG"), cab.get("ORIG")),
