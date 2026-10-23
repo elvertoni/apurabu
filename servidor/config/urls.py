@@ -21,5 +21,7 @@ urlpatterns = [
     path('api/nomes/', views.NomesView.as_view(), name='nomes'),
     path('api/totais/', views.TotaisView.as_view(), name='totais'),
     path('importar/', views.ImportarView.as_view(), name='importar'),
+    path('equipe/', views.EquipeView.as_view(), name='equipe'),
+    path('equipe/<int:pk>/qr.svg', views.EquipeQrView.as_view(), name='equipe-qr'),
     re_path(r'^app/(?P<caminho>.*)$', views.PwaView.as_view(), name='app'),
 ]

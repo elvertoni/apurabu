@@ -170,6 +170,7 @@
   <div class="topo-dir">
     <span class="rede" id="estado" role="status">carregando…</span>
     <button class="btn-topo" id="btn-telao" type="button">Modo telão</button>
+    {% if perms.boletins.change_dispositivo %}<a class="btn-topo" href="{% url 'equipe' %}">Repórteres</a>{% endif %}
     <a class="btn-topo" href="{% url 'manual' %}">Manual</a>
     <a class="btn-topo" href="{% url 'admin:index' %}">Admin</a>
   </div>

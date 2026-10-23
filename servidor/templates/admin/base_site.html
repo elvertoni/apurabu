@@ -4,6 +4,7 @@
 {% block nav-global %}
 <nav class="apura-nav" aria-label="Áreas do Apura BU">
   {% if user.is_staff %}<a href="{% url 'painel' %}">Painel</a><a href="{% url 'importar' %}">Importar boletins</a>{% endif %}
+  {% if perms.boletins.change_dispositivo %}<a href="{% url 'equipe' %}">Repórteres</a>{% endif %}
   <a href="{% url 'manual' %}">Manual</a>
 </nav>
 {% endblock %}

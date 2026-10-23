@@ -17,10 +17,10 @@ def link_configuracao(request, d):
 
 @admin.register(Dispositivo)
 class DispositivoAdmin(admin.ModelAdmin):
-    list_display = ['nome', 'ativo', 'ultimo_envio', 'qtd_boletins']
+    list_display = ['nome', 'telefone', 'ativo', 'ultimo_contato', 'ultimo_envio', 'qtd_boletins']
     list_filter = ['ativo']
-    readonly_fields = ['token', 'configurar_celular', 'criado_em', 'ultimo_envio']
-    fields = ['nome', 'ativo', 'configurar_celular', 'token', 'criado_em', 'ultimo_envio']
+    readonly_fields = ['token', 'configurar_celular', 'criado_em', 'ultimo_envio', 'ultimo_contato']
+    fields = ['nome', 'telefone', 'ativo', 'configurar_celular', 'token', 'criado_em', 'ultimo_contato', 'ultimo_envio']
     actions = ['trocar_codigo']
 
     def get_form(self, request, obj=None, **kwargs):

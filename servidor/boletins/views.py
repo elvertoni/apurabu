@@ -1,21 +1,30 @@
+import io
 import json
 import logging
 import mimetypes
 import re
+from datetime import timedelta
 from pathlib import Path
+from urllib.parse import quote
+
+import segno
 
 from django.conf import settings
 from django.contrib import admin, messages
 from django.contrib.admin.views.decorators import staff_member_required
-from django.http import FileResponse, Http404, HttpResponseRedirect, JsonResponse
-from django.shortcuts import render
-from django.urls import reverse
+from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.db.models import Count
+from django.http import FileResponse, Http404, HttpResponse, HttpResponseRedirect, JsonResponse
+from django.shortcuts import get_object_or_404, render
+from django.urls import reverse, reverse_lazy
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 
 from . import painel
-from .models import Boletim, Candidato, Dispositivo, Eleicao, LocalVotacao, Municipio, Partido
+from .admin import link_configuracao
+from .models import Boletim, Candidato, Dispositivo, Eleicao, LocalVotacao, Municipio, Partido, gerar_token
 from .servicos import BoletimRecusado, registrar_boletim, totalizar
 
 log = logging.getLogger('boletins')
@@ -38,6 +47,10 @@ class TokenMixin:
                 log.warning('Código de acesso recusado em %s (IP %s)', request.path,
                             request.headers.get('CF-Connecting-IP') or request.META.get('REMOTE_ADDR'))
             return JsonResponse({'detail': 'Código de acesso inválido ou desativado'}, status=401)
+        d = self.dispositivo
+        if d and (not d.ultimo_contato or timezone.now() - d.ultimo_contato > timedelta(minutes=1)):
+            d.ultimo_contato = timezone.now()
+            d.save(update_fields=['ultimo_contato'])
         return super().dispatch(request, *args, **kwargs)
 
 
@@ -165,6 +178,187 @@ class ImportarView(View):
         for e in erros[:30]:
             messages.error(request, e)
         return HttpResponseRedirect(reverse('importar'))
+
+
+# ------------------------------------------------------------------ equipe de repórteres
+
+def normalizar_telefone(texto):
+    """'(43) 99999-1234' -> '5543999991234'. Vazio continua vazio; número fora do padrão levanta ValueError."""
+    d = re.sub(r'\D', '', texto or '')
+    if not d:
+        return ''
+    if len(d) in (10, 11):
+        d = '55' + d
+    if len(d) not in (12, 13) or not d.startswith('55'):
+        raise ValueError
+    return d
+
+
+def telefone_legivel(d):
+    return f'({d[2:4]}) {d[4:-4]}-{d[-4:]}' if len(d) in (12, 13) else d
+
+
+def link_whatsapp(d, link):
+    texto = (f'Olá, {d.nome}! Este é o seu acesso ao app de apuração da rádio.\n\n'
+             f'1. Toque no link para configurar o celular:\n{link}\n\n'
+             '2. No app, abra Ajustes e toque em Testar conexão.\n\n'
+             'O link é pessoal: não repasse para ninguém.')
+    return f'https://wa.me/{d.telefone}?text={quote(texto)}'
+
+
+def situacao_reporter(d, agora):
+    """(classe, texto) do que o repórter já fez: abriu o link, enviou boletins..."""
+    if not d.ativo:
+        return 'desativado', 'Acesso desativado'
+    if d.ultimo_envio:
+        hora = timezone.localtime(d.ultimo_envio)
+        quando = f'às {hora:%H:%M}' if hora.date() == timezone.localtime(agora).date() else f'em {hora:%d/%m} às {hora:%H:%M}'
+        return 'enviando', f'{d.qtd} boletim enviado, último {quando}' if d.qtd == 1 else \
+            f'{d.qtd} boletins enviados, último {quando}'
+    if d.ultimo_contato:
+        return 'pronto', 'Abriu o app, sem boletins ainda'
+    return 'aguardando', 'Ainda não abriu o link'
+
+
+# "Maria Souza, (43) 99999-1234" | "Maria Souza; 43999991234" | "Maria Souza 43 99999 1234" | "Maria Souza"
+RE_TELEFONE_NO_FIM = re.compile(r'^(?P<nome>.+?)\s+(?P<tel>\+?[\d\s().-]{10,})$')
+
+
+def ler_linha_lote(linha):
+    """(nome, telefone em texto). Depois de vírgula, ponto e vírgula ou tab, o resto é o telefone."""
+    partes = re.split(r'\s*[,;\t]\s*', linha, maxsplit=1)
+    if len(partes) == 2:
+        return partes[0], partes[1]
+    m = RE_TELEFONE_NO_FIM.match(linha)
+    return (m['nome'], m['tel']) if m else (linha, '')
+
+
+class EquipeView(PermissionRequiredMixin, View):
+    """Cadastro dos repórteres e entrega do acesso (QR, link, WhatsApp). Só administradores."""
+
+    permission_required = ('boletins.add_dispositivo', 'boletins.change_dispositivo')
+    login_url = reverse_lazy('admin:login')
+    template_name = 'boletins/equipe.html'
+
+    def get(self, request, form=None, status=200):
+        agora = timezone.now()
+        reporteres = list(Dispositivo.objects.annotate(qtd=Count('boletim')).order_by('-ativo', 'nome'))
+        for d in reporteres:
+            d.situacao, d.situacao_texto = situacao_reporter(d, agora)
+            d.link = link_configuracao(request, d)
+            d.whatsapp = link_whatsapp(d, d.link)
+            d.telefone_legivel = telefone_legivel(d.telefone)
+        ativos = [d for d in reporteres if d.ativo]
+        entregar = request.GET.get('entregar', '')
+        return render(request, self.template_name, {
+            'reporteres': reporteres,
+            'total_ativos': len(ativos),
+            'total_prontos': sum(d.situacao in ('pronto', 'enviando') for d in ativos),
+            'total_aguardando': sum(d.situacao == 'aguardando' for d in ativos),
+            'entregar': int(entregar) if entregar.isdigit() else None,
+            'form': form or {},
+        }, status=status)
+
+    def post(self, request):
+        acao = request.POST.get('acao')
+        if acao == 'criar':
+            return self._criar(request)
+        if acao == 'lote':
+            return self._lote(request)
+        pk = request.POST.get('id', '')
+        d = get_object_or_404(Dispositivo, pk=int(pk) if pk.isdigit() else 0)
+        if acao == 'editar':
+            nome = request.POST.get('nome', '').strip()[:100]
+            try:
+                telefone = normalizar_telefone(request.POST.get('telefone'))
+            except ValueError:
+                messages.error(request, f'WhatsApp de {d.nome} não foi alterado: use o DDD e o número, como (43) 99999-1234.')
+                return self._voltar()
+            if not nome:
+                messages.error(request, 'O nome do repórter não pode ficar vazio.')
+                return self._voltar()
+            d.nome, d.telefone = nome, telefone
+            d.save(update_fields=['nome', 'telefone'])
+            messages.success(request, f'Dados de {d.nome} salvos.')
+        elif acao in ('desativar', 'reativar'):
+            d.ativo = acao == 'reativar'
+            d.save(update_fields=['ativo'])
+            messages.success(request, f'{d.nome} pode enviar boletins de novo.' if d.ativo else
+                             f'Acesso de {d.nome} desativado. O celular dele não envia mais boletins.')
+        elif acao == 'novo_codigo':
+            d.token = gerar_token()
+            d.save(update_fields=['token'])
+            messages.success(request, f'Novo código gerado. O link antigo de {d.nome} parou de funcionar: '
+                                      'entregue o novo acesso abaixo.')
+            return self._voltar(entregar=d.pk)
+        return self._voltar()
+
+    def _voltar(self, entregar=None):
+        return HttpResponseRedirect(reverse('equipe') + (f'?entregar={entregar}' if entregar else ''))
+
+    def _criar(self, request):
+        nome = request.POST.get('nome', '').strip()[:100]
+        form = {'nome': nome, 'telefone': request.POST.get('telefone', '').strip()}
+        erros = {}
+        if not nome:
+            erros['nome'] = 'Escreva o nome do repórter.'
+        elif Dispositivo.objects.filter(nome__iexact=nome, ativo=True).exists():
+            erros['nome'] = 'Já existe um repórter ativo com esse nome. Acrescente a região, como "Maria — Zona 58".'
+        try:
+            telefone = normalizar_telefone(form['telefone'])
+        except ValueError:
+            erros['telefone'] = 'Use o DDD e o número, como (43) 99999-1234. Pode deixar em branco.'
+        if erros:
+            return self.get(request, form={**form, 'erros': erros}, status=400)
+        d = Dispositivo.objects.create(nome=nome, telefone=telefone)
+        messages.success(request, f'{d.nome} cadastrado. Agora entregue o acesso.')
+        return self._voltar(entregar=d.pk)
+
+    def _lote(self, request):
+        criados, problemas = [], []
+        existentes = {n.lower() for n in Dispositivo.objects.filter(ativo=True).values_list('nome', flat=True)}
+        for linha in request.POST.get('lista', '').splitlines():
+            linha = linha.strip()
+            if not linha:
+                continue
+            nome, tel = ler_linha_lote(linha)
+            nome = nome.strip()[:100]
+            if not nome:
+                problemas.append(f'"{linha}": falta o nome')
+                continue
+            try:
+                telefone = normalizar_telefone(tel)
+            except ValueError:
+                problemas.append(f'"{linha}": WhatsApp fora do padrão')
+                continue
+            if nome.lower() in existentes:
+                problemas.append(f'"{nome}": já cadastrado')
+                continue
+            existentes.add(nome.lower())
+            criados.append(Dispositivo.objects.create(nome=nome, telefone=telefone))
+        if criados:
+            messages.success(request, f'{len(criados)} repórter(es) cadastrado(s). Use "Entregar acesso" em cada um.')
+        if problemas:
+            messages.warning(request, 'Não cadastrados: ' + '; '.join(problemas[:20]) + '.')
+        if not criados and not problemas:
+            messages.warning(request, 'A lista estava vazia. Escreva um repórter por linha.')
+        return self._voltar()
+
+
+class EquipeQrView(PermissionRequiredMixin, View):
+    """QR Code de configuração de um repórter, em SVG, para escanear da tela."""
+
+    permission_required = ('boletins.add_dispositivo', 'boletins.change_dispositivo')
+    login_url = reverse_lazy('admin:login')
+
+    def get(self, request, pk):
+        d = get_object_or_404(Dispositivo, pk=pk, ativo=True)
+        buf = io.BytesIO()
+        segno.make(link_configuracao(request, d), error='m').save(buf, kind='svg', scale=8, border=2,
+                                                                   xmldecl=False, dark='#0f1b2d')
+        resp = HttpResponse(buf.getvalue(), content_type='image/svg+xml')
+        resp['Cache-Control'] = 'no-store'  # o QR leva o código: não fica em cache
+        return resp
 
 
 # ------------------------------------------------------------------ painel de acompanhamento

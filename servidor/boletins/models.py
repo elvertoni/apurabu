@@ -34,10 +34,13 @@ class Dispositivo(models.Model):
     """Celular (ou equipe) autorizado a enviar boletins."""
 
     nome = models.CharField('repórter / equipe', max_length=100)
+    telefone = models.CharField('WhatsApp', max_length=20, blank=True, help_text='Só números, com DDD')
     token = models.CharField('código de acesso', max_length=40, unique=True, default=gerar_token)
     ativo = models.BooleanField(default=True)
     criado_em = models.DateTimeField(auto_now_add=True)
     ultimo_envio = models.DateTimeField('último envio', null=True, blank=True)
+    # qualquer chamada com o código (o app pede /api/nomes/ ao abrir): mostra que o link foi aberto
+    ultimo_contato = models.DateTimeField('último contato do app', null=True, blank=True)
 
     class Meta:
         verbose_name = 'celular autorizado'

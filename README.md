@@ -46,10 +46,10 @@ Em produção desde 14/10/2026 em **https://apuracao.tonicoimbra.com**.
 ## Como usar no dia da eleição
 
 ### 1. Cadastrar os celulares (antes do dia)
-1. Entre em **Admin → Celulares autorizados → Adicionar**.
-2. Cadastre um registro por repórter ou equipe e salve.
-3. Abra o cadastro salvo. Aparece um **QR Code de configuração**.
-4. O repórter aponta a câmera do celular para esse QR Code. O app abre já configurado com o servidor e o código de acesso.
+1. Abra https://apuracao.tonicoimbra.com/equipe/ (só administradores).
+2. Preencha o nome e, se quiser, o WhatsApp do repórter e toque em **Cadastrar e entregar acesso**. Para vários de uma vez, use **Cadastrar vários de uma vez**, um por linha (`Nome, (43) 99999-1234`).
+3. Na janela de entrega, o repórter ao lado aponta a câmera para o QR Code. Longe, use **Enviar pelo WhatsApp** ou **Copiar** o link e mande só para ele.
+4. O app abre já configurado com o servidor e o código de acesso. Na lista, o repórter passa de "Ainda não abriu o link" para "Abriu o app".
 5. No celular, use **"Adicionar à tela inicial"** para instalar o app.
 6. Na aba **Ajustes** do app, o botão **Testar conexão** confirma que está tudo certo.
 
@@ -67,9 +67,9 @@ Em produção desde 14/10/2026 em **https://apuracao.tonicoimbra.com**.
 3. Importe em https://apuracao.tonicoimbra.com/importar/. Todos os QR Codes são validados de novo, e seções já registradas são ignoradas.
 
 ### 4. Celular perdido ou link vazado
-Em **Admin → Celulares autorizados**, desmarque **Ativo**. O celular para de enviar na hora.
+Em **Repórteres** (`/equipe/`), use **Gerenciar → Desativar acesso**. O celular para de enviar na hora.
 
-Se o link de configuração caiu em mãos erradas, marque o celular na lista, escolha a ação **Gerar novo código de acesso** e mostre o novo QR Code ao repórter. O código antigo para de funcionar, e os boletins já enviados continuam ligados ao celular.
+Se o link de configuração caiu em mãos erradas, use **Gerenciar → Gerar novo código** e entregue o novo acesso. O código antigo para de funcionar, e os boletins já enviados continuam ligados ao celular. As mesmas ações existem em **Admin → Celulares autorizados**.
 
 ### 5. Acompanhar
 Use o painel. Os detalhes estão na próxima seção.

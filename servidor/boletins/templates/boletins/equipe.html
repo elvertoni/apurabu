@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Repórteres · Apura BU</title>
+<style>
+  :root {
+    color-scheme: light;
+    --fundo: #f3f5f8; --cartao: #ffffff; --texto: #142033; --suave: #5b6b80; --borda: #dde3eb; --grade: #edf1f5;
+    --hover: #f1f5fa; --marca: #0f1b2d; --link: #1f5ea8; --campo: #ffffff;
+    --primario: #1f5ea8; --primario-hover: #184c88; --primario-texto: #ffffff;
+    --ok: #19643b; --alerta: #855300; --erro: #b3261e; --info: #1f5ea8;
+    --sombra: 0 10px 40px rgba(15, 27, 45, .22);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      color-scheme: dark;
+      --fundo: #0b1320; --cartao: #142033; --texto: #e9eef5; --suave: #93a3b8; --borda: #24344c; --grade: #1b2a3f;
+      --hover: #1a2a41; --marca: #070d17; --link: #8cbcf2; --campo: #0f1a2b;
+      --primario: #8cbcf2; --primario-hover: #a9cdf5; --primario-texto: #0b1320;
+      --ok: #3fb56f; --alerta: #e0a33a; --erro: #ef7a6e; --info: #8cbcf2;
+      --sombra: 0 10px 40px rgba(0, 0, 0, .55);
+    }
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { margin: 0; background: var(--fundo); color: var(--texto);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  ::selection { background: #e8a317; color: #1a1300; }
+  :focus-visible { outline: 3px solid var(--link); outline-offset: 3px; }
+  a { color: var(--link); text-underline-offset: 3px; }
+  input, textarea, button { font: inherit; color: inherit; }
+  input, textarea { caret-color: var(--link); }
+  .ico { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  fieldset.filtro { margin: 0; min-width: 0; }
+  .skip { position: absolute; top: -100px; left: 16px; padding: 12px; z-index: 30; background: var(--cartao); color: var(--texto); }
+  .skip:focus { top: 8px; }
+
+  /* topo igual ao painel */
+  .topo { display: flex; flex-wrap: wrap; gap: 8px 16px; justify-content: space-between; align-items: center;
+    padding: 10px 16px; background: var(--marca); color: #fff; }
+  .marca { font-weight: 800; font-size: 17px; display: flex; align-items: baseline; gap: 10px; }
+  .marca small { font-weight: 400; opacity: .8; font-size: 14px; }
+  .topo nav { display: flex; flex-wrap: wrap; gap: 8px; }
+  .topo nav a { display: inline-flex; align-items: center; min-height: 44px; padding: 10px 12px; font-size: 14px; font-weight: 600;
+    color: #fff; text-decoration: none; border-radius: 8px; border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.08); }
+  .topo nav a:hover { background: rgba(255,255,255,.16); }
+  .topo nav a[aria-current="page"] { background: #fff; color: var(--marca); border-color: #fff; }
+
+  main { max-width: 1240px; margin: 0 auto; padding: 28px 16px 48px; }
+  .cabeca { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 24px; margin-bottom: 20px; }
+  h1 { font-size: 28px; line-height: 1.2; letter-spacing: -0.02em; margin: 0 0 6px; text-wrap: balance; }
+  .cabeca p { margin: 0; color: var(--suave); max-width: 62ch; }
+  .placar { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+  .placar li { display: flex; align-items: baseline; gap: 6px; padding: 8px 14px; border-radius: 10px; background: var(--cartao);
+    border: 1px solid var(--borda); font-size: 14px; color: var(--suave); }
+  .placar b { font-size: 20px; color: var(--texto); font-variant-numeric: tabular-nums; }
+  .placar .falta b { color: var(--alerta); }
+
+  .mensagens { list-style: none; margin: 0 0 20px; padding: 0; display: grid; gap: 8px; }
+  .mensagens li { padding: 12px 16px; border-radius: 10px; background: var(--cartao); border: 1px solid var(--borda); }
+  .mensagens .success { border-color: color-mix(in srgb, var(--ok) 45%, var(--borda)); background: color-mix(in srgb, var(--ok) 8%, var(--cartao)); }
+  .mensagens .warning { border-color: color-mix(in srgb, var(--alerta) 45%, var(--borda)); background: color-mix(in srgb, var(--alerta) 8%, var(--cartao)); }
+  .mensagens .error { border-color: color-mix(in srgb, var(--erro) 45%, var(--borda)); background: color-mix(in srgb, var(--erro) 8%, var(--cartao)); }
+
+  .grade { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: 20px; align-items: start; }
+  .cartao { background: var(--cartao); border: 1px solid var(--borda); border-radius: 14px; padding: 20px; min-width: 0; }
+  .cartao h2 { font-size: 18px; margin: 0 0 4px; }
+  .cartao .sub { margin: 0 0 16px; color: var(--suave); font-size: 14px; }
+
+  /* formulário */
+  .novo { position: sticky; top: 16px; }
+  .campo { display: grid; gap: 6px; margin-bottom: 14px; }
+  .campo label { font-weight: 600; font-size: 15px; }
+  .campo label span { font-weight: 400; color: var(--suave); }
+  .campo input, .campo textarea, .busca input { width: 100%; min-height: 44px; padding: 10px 12px; font-size: 16px;
+    background: var(--campo); border: 1px solid var(--borda); border-radius: 8px; }
+  .campo input:hover, .campo textarea:hover, .busca input:hover { border-color: var(--suave); }
+  .campo input:focus-visible, .campo textarea:focus-visible, .busca input:focus-visible { outline: 2px solid var(--link); outline-offset: 0; border-color: var(--link); }
+  .campo textarea { min-height: 150px; resize: vertical; line-height: 1.45; }
+  .campo .ajuda { margin: 0; font-size: 14px; color: var(--suave); }
+  .campo .erro { margin: 0; font-size: 14px; color: var(--erro); font-weight: 600; }
+  .campo [aria-invalid="true"] { border-color: var(--erro); }
+  ::placeholder { color: var(--suave); opacity: 1; }
+
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 10px 16px;
+    border-radius: 8px; border: 1px solid var(--borda); background: var(--cartao); color: var(--texto); font-size: 15px; font-weight: 600;
+    text-decoration: none; cursor: pointer; white-space: nowrap; transition: background-color .15s ease-out, border-color .15s ease-out; }
+  .btn:hover { background: var(--hover); border-color: var(--suave); }
+  .btn.primario { background: var(--primario); border-color: var(--primario); color: var(--primario-texto); }
+  .btn.primario:hover { background: var(--primario-hover); border-color: var(--primario-hover); }
+  .btn.perigo { color: var(--erro); }
+  .btn.largo { width: 100%; }
+  .btn:disabled { opacity: .6; cursor: wait; }
+
+  details.lote { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--grade); }
+  details.lote summary { cursor: pointer; color: var(--link); font-weight: 600; font-size: 15px; min-height: 44px; display: flex; align-items: center; }
+  details.lote[open] summary { margin-bottom: 8px; }
+
+  /* lista de repórteres */
+  .ferramentas { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .filtro { display: inline-flex; flex-wrap: wrap; gap: 4px; padding: 4px; border-radius: 10px; background: var(--fundo); border: 1px solid var(--borda); }
+  .filtro label { position: relative; }
+  .filtro input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+  .filtro span { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 6px 12px; border-radius: 7px; font-size: 14px; font-weight: 600; color: var(--suave); }
+  .filtro input:checked + span { background: var(--cartao); color: var(--texto); box-shadow: 0 1px 3px rgba(15,27,45,.12); }
+  .filtro input:focus-visible + span { outline: 2px solid var(--link); }
+  .filtro em { font-style: normal; font-variant-numeric: tabular-nums; color: var(--suave); font-weight: 400; }
+  .busca { position: relative; flex: 1 1 200px; max-width: 280px; }
+  .busca input { padding-left: 38px; }
+  .busca .ico { position: absolute; left: 11px; top: 12px; color: var(--suave); pointer-events: none; }
+
+  .reporteres { list-style: none; margin: 0; padding: 0; }
+  .reporter { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) auto; gap: 8px 20px; align-items: center;
+    padding: 14px 8px; border-bottom: 1px solid var(--grade); border-radius: 8px; transition: background-color .6s ease-out; }
+  .reporter:last-child { border-bottom: 0; }
+  .reporter.destaque { background: color-mix(in srgb, var(--info) 10%, transparent); }
+  .reporter.desativado .quem strong { color: var(--suave); }
+  .quem { min-width: 0; }
+  .quem strong { display: block; font-size: 16px; overflow-wrap: anywhere; }
+  .quem small { color: var(--suave); font-size: 14px; font-variant-numeric: tabular-nums; }
+  .selo { margin: 0; display: inline-flex; align-items: center; gap: 8px; font-size: 14px; line-height: 1.35; }
+  .selo::before { content: ""; flex: none; width: 9px; height: 9px; border-radius: 50%; background: currentColor; }
+  .selo.enviando { color: var(--ok); }
+  .selo.pronto { color: var(--info); }
+  .selo.aguardando { color: var(--alerta); }
+  .selo.desativado { color: var(--suave); }
+  .selo.desativado::before { background: none; border: 1.5px solid currentColor; }
+  .selo span { color: var(--texto); }
+  .selo.desativado span { color: var(--suave); }
+  .acoes { display: flex; gap: 8px; justify-content: flex-end; align-items: flex-start; }
+
+  details.gerenciar { position: relative; }
+  details.gerenciar > summary { list-style: none; }
+  details.gerenciar > summary::-webkit-details-marker { display: none; }
+  details.gerenciar[open] > summary { background: var(--hover); border-color: var(--suave); }
+  .painel-gerenciar { position: absolute; right: 0; top: calc(100% + 6px); z-index: 10; width: min(340px, calc(100vw - 32px));
+    padding: 16px; background: var(--cartao); border-radius: 12px; box-shadow: var(--sombra); }
+  .painel-gerenciar .campo { margin-bottom: 10px; }
+  .painel-gerenciar .linha-acoes { display: grid; gap: 8px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--grade); }
+  .painel-gerenciar .linha-acoes p { margin: 0 0 4px; font-size: 14px; color: var(--suave); }
+
+  .vazio { text-align: center; padding: 40px 16px; color: var(--suave); }
+  .vazio strong { display: block; color: var(--texto); font-size: 17px; margin-bottom: 4px; }
+  .sem-resultado { padding: 24px 8px; color: var(--suave); }
+
+  /* entrega do acesso */
+  dialog.entrega { width: min(760px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); padding: 0; border: 0; border-radius: 16px;
+    background: var(--cartao); color: var(--texto); box-shadow: var(--sombra); }
+  dialog.entrega::backdrop { background: rgba(7, 13, 23, .62); }
+  dialog.entrega[open] { animation: surge .22s cubic-bezier(.16, 1, .3, 1); }
+  @keyframes surge { from { opacity: 0; transform: translateY(12px) scale(.985); } }
+  .entrega-topo { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 20px 20px 0 24px; }
+  .entrega-topo h2 { margin: 0; font-size: 22px; letter-spacing: -0.02em; overflow-wrap: anywhere; }
+  .entrega-topo p { margin: 2px 0 0; color: var(--suave); font-size: 14px; }
+  .fechar { flex: none; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 8px; border: 0; background: none; color: var(--suave); cursor: pointer; }
+  .fechar:hover { background: var(--hover); color: var(--texto); }
+  .entrega-corpo { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 28px; padding: 20px 24px 24px; }
+  .qr { margin: 0; }
+  .qr .quadro { display: grid; place-items: center; aspect-ratio: 1; padding: 12px; border-radius: 12px; background: #fff; border: 1px solid var(--borda); }
+  .qr img { width: 100%; height: auto; display: block; image-rendering: pixelated; }
+  .qr figcaption { margin-top: 10px; font-size: 14px; color: var(--suave); }
+  .qr figcaption b { color: var(--texto); }
+  .caminho h3 { margin: 0 0 4px; font-size: 16px; }
+  .caminho > p { margin: 0 0 14px; color: var(--suave); font-size: 14px; }
+  .caminho .botoes { display: grid; gap: 10px; }
+  .copia { display: flex; gap: 8px; margin-top: 4px; }
+  .copia input { flex: 1; min-width: 0; min-height: 44px; padding: 8px 10px; font-size: 14px; color: var(--suave);
+    background: var(--fundo); border: 1px solid var(--borda); border-radius: 8px; }
+  .passos { margin: 22px 0 0; padding: 14px 16px; border-radius: 10px; background: var(--fundo); font-size: 14px; }
+  .passos ol { margin: 6px 0 0; padding-left: 20px; }
+  .passos li + li { margin-top: 4px; }
+  .aviso-link { display: flex; gap: 8px; margin: 14px 0 0; font-size: 14px; color: var(--alerta); }
+  .aviso-link .ico { width: 18px; height: 18px; margin-top: 1px; }
+
+  .toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 16px); z-index: 40; padding: 12px 18px; border-radius: 10px;
+    background: var(--marca); color: #fff; font-weight: 600; box-shadow: var(--sombra); opacity: 0; pointer-events: none;
+    transition: opacity .2s ease-out, transform .25s cubic-bezier(.16, 1, .3, 1); }
+  .toast.visivel { opacity: 1; transform: translate(-50%, 0); }
+
+  @media (max-width: 900px) {
+    .grade { grid-template-columns: minmax(0, 1fr); }
+    .novo { position: static; }
+    .reporter { grid-template-columns: minmax(0, 1fr) auto; }
+    .reporter .selo { grid-column: 1 / -1; grid-row: 2; }
+  }
+  @media (max-width: 640px) {
+    main { padding-top: 20px; }
+    h1 { font-size: 24px; }
+    .cartao { padding: 16px; }
+    .reporter { grid-template-columns: minmax(0, 1fr); padding-inline: 4px; }
+    .reporter .selo { grid-row: auto; }
+    .acoes { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); }
+    .acoes:has(> form:only-child) { grid-template-columns: minmax(0, 1fr); }
+    .acoes .btn { width: 100%; padding-inline: 10px; font-size: 14px; }
+    .filtro { display: flex; width: 100%; }
+    .filtro label { flex: 1; }
+    .filtro span { justify-content: center; padding-inline: 6px; }
+    .painel-gerenciar { position: fixed; left: 12px; right: 12px; bottom: 12px; top: auto; width: auto; max-height: 80dvh; overflow: auto; }
+    .entrega-corpo { grid-template-columns: minmax(0, 1fr); gap: 20px; padding: 16px; }
+    .entrega-topo { padding: 16px 12px 0 16px; }
+    .qr { max-width: 280px; width: 100%; margin-inline: auto; }
+    .busca { max-width: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    dialog.entrega[open] { animation: none; }
+    .toast, .reporter, .btn { transition: none; }
+  }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-qr" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14v.01M14 20h.01M17 20h4v-3"/></symbol>
+  <symbol id="i-mensagem" viewBox="0 0 24 24"><path d="M4 20l1.4-4.2A8 8 0 1 1 8.2 18.6Z"/><path d="M9 10.5h6M9 13.5h4"/></symbol>
+  <symbol id="i-copiar" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></symbol>
+  <symbol id="i-fechar" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-ajustes" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></symbol>
+  <symbol id="i-busca" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4 4"/></symbol>
+  <symbol id="i-mais" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-cadeado" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+</svg>
+<a class="skip" href="#conteudo">Ir para o conteúdo</a>
+<header class="topo">
+  <div class="marca">Apura BU <small>servidor da rádio</small></div>
+  <nav aria-label="Áreas do Apura BU">
+    <a href="{% url 'painel' %}">Painel</a>
+    <a href="{% url 'equipe' %}" aria-current="page">Repórteres</a>
+    <a href="{% url 'importar' %}">Importar boletins</a>
+    <a href="{% url 'manual' %}">Manual</a>
+    <a href="{% url 'admin:index' %}">Admin</a>
+  </nav>
+</header>
+
+<main id="conteudo" tabindex="-1">
+  <div class="cabeca">
+    <div>
+      <h1>Repórteres</h1>
+      <p>Cadastre quem vai às escolas e entregue o acesso pelo WhatsApp ou pelo QR Code. O repórter não cria senha: o link configura o app sozinho.</p>
+    </div>
+    {% if reporteres %}
+    <ul class="placar" aria-label="Situação da equipe">
+      <li><b>{{ total_ativos }}</b> com acesso</li>
+      <li><b>{{ total_prontos }}</b> já abriram o app</li>
+      <li class="{% if total_aguardando %}falta{% endif %}"><b>{{ total_aguardando }}</b> ainda não abriram</li>
+    </ul>
+    {% endif %}
+  </div>
+
+  {% if messages %}
+  <ul class="mensagens" role="status">
+    {% for m in messages %}<li class="{{ m.tags }}">{{ m }}</li>{% endfor %}
+  </ul>
+  {% endif %}
+
+  <div class="grade">
+    <section class="cartao novo" aria-labelledby="t-novo">
+      <h2 id="t-novo">Novo repórter</h2>
+      <p class="sub">Um cadastro por pessoa. Assim o painel mostra quem enviou cada boletim.</p>
+      <form method="post" novalidate>
+        {% csrf_token %}
+        <input type="hidden" name="acao" value="criar">
+        <div class="campo">
+          <label for="f-nome">Nome</label>
+          <input id="f-nome" name="nome" maxlength="100" required autocomplete="off" placeholder="Ex.: Maria Souza — Zona 58"
+            value="{{ form.nome|default:'' }}"{% if form.erros.nome %} aria-invalid="true" aria-describedby="e-nome"{% endif %}{% if form.erros %} autofocus{% endif %}>
+          {% if form.erros.nome %}<p class="erro" id="e-nome">{{ form.erros.nome }}</p>{% endif %}
+        </div>
+        <div class="campo">
+          <label for="f-telefone">WhatsApp <span>(opcional)</span></label>
+          <input id="f-telefone" name="telefone" type="tel" inputmode="tel" autocomplete="off" placeholder="Ex.: (43) 99999-1234"
+            value="{{ form.telefone|default:'' }}" aria-describedby="{% if form.erros.telefone %}e-telefone {% endif %}a-telefone"{% if form.erros.telefone %} aria-invalid="true"{% endif %}>
+          {% if form.erros.telefone %}<p class="erro" id="e-telefone">{{ form.erros.telefone }}</p>{% endif %}
+          <p class="ajuda" id="a-telefone">Com o número, o botão do WhatsApp já abre a conversa com ele.</p>
+        </div>
+        <button class="btn primario largo" type="submit"><svg class="ico" aria-hidden="true"><use href="#i-mais"/></svg>Cadastrar e entregar acesso</button>
+      </form>
+
+      <details class="lote">
+        <summary>Cadastrar vários de uma vez</summary>
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="acao" value="lote">
+          <div class="campo">
+            <label for="f-lista">Um repórter por linha</label>
+            <textarea id="f-lista" name="lista" aria-describedby="a-lista" placeholder="Maria Souza, (43) 99999-1234&#10;João Lima, 43 98888-0000&#10;Ana Prado"></textarea>
+            <p class="ajuda" id="a-lista">Nome e, se quiser, o WhatsApp depois de uma vírgula. Nomes já cadastrados são ignorados.</p>
+          </div>
+          <button class="btn largo" type="submit">Cadastrar a lista</button>
+        </form>
+      </details>
+    </section>
+
+    <section class="cartao" aria-labelledby="t-equipe">
+      <h2 id="t-equipe">Equipe</h2>
+      {% if reporteres %}
+      <p class="sub">"Abriu o app" aparece quando o repórter toca no link. Cobre quem ainda não abriu antes do dia da eleição.</p>
+      <div class="ferramentas">
+        <fieldset class="filtro">
+          <legend class="sr-only">Mostrar</legend>
+          <label><input type="radio" name="filtro" value="todos" checked><span>Todos <em>{{ reporteres|length }}</em></span></label>
+          <label><input type="radio" name="filtro" value="aguardando"><span>Não abriram <em>{{ total_aguardando }}</em></span></label>
+          <label><input type="radio" name="filtro" value="desativado"><span>Desativados</span></label>
+        </fieldset>
+        {% if reporteres|length > 6 %}
+        <div class="busca">
+          <svg class="ico" aria-hidden="true"><use href="#i-busca"/></svg>
+          <input type="search" id="busca" placeholder="Buscar repórter" aria-label="Buscar repórter">
+        </div>
+        {% endif %}
+      </div>
+
+      <ul class="reporteres" id="lista">
+        {% for d in reporteres %}
+        <li class="reporter{% if not d.ativo %} desativado{% endif %}" id="r-{{ d.pk }}" data-situacao="{{ d.situacao }}" data-busca="{{ d.nome|lower }} {{ d.telefone }}">
+          <div class="quem">
+            <strong>{{ d.nome }}</strong>
+            <small>{% if d.telefone %}{{ d.telefone_legivel }}{% else %}sem WhatsApp cadastrado{% endif %}</small>
+          </div>
+          <p class="selo {{ d.situacao }}"><span>{{ d.situacao_texto }}</span></p>
+          <div class="acoes">
+            {% if d.ativo %}
+            <button class="btn{% if d.situacao == 'aguardando' %} primario{% endif %}" type="button" data-entregar="{{ d.pk }}" data-nome="{{ d.nome }}" data-link="{{ d.link }}"
+              data-whatsapp="{{ d.whatsapp }}" data-telefone="{{ d.telefone_legivel }}" data-qr="{% url 'equipe-qr' d.pk %}">
+              <svg class="ico" aria-hidden="true"><use href="#i-qr"/></svg>Entregar acesso</button>
+            <details class="gerenciar">
+              <summary class="btn" aria-label="Gerenciar {{ d.nome }}"><svg class="ico" aria-hidden="true"><use href="#i-ajustes"/></svg>Gerenciar</summary>
+              <div class="painel-gerenciar">
+                <form method="post">
+                  {% csrf_token %}
+                  <input type="hidden" name="acao" value="editar"><input type="hidden" name="id" value="{{ d.pk }}">
+                  <div class="campo"><label for="n-{{ d.pk }}">Nome</label><input id="n-{{ d.pk }}" name="nome" maxlength="100" required value="{{ d.nome }}"></div>
+                  <div class="campo"><label for="t-{{ d.pk }}">WhatsApp <span>(opcional)</span></label><input id="t-{{ d.pk }}" name="telefone" type="tel" inputmode="tel" value="{{ d.telefone_legivel }}" placeholder="(43) 99999-1234"></div>
+                  <button class="btn primario largo" type="submit">Salvar</button>
+                </form>
+                <div class="linha-acoes">
+                  <p>O link vazou ou caiu em mãos erradas?</p>
+                  <form method="post" data-confirmar="Gerar um novo código para {{ d.nome }}? O link atual para de funcionar e você precisa entregar o novo.">
+                    {% csrf_token %}<input type="hidden" name="acao" value="novo_codigo"><input type="hidden" name="id" value="{{ d.pk }}">
+                    <button class="btn largo" type="submit">Gerar novo código</button>
+                  </form>
+                  <form method="post" data-confirmar="Desativar o acesso de {{ d.nome }}? O celular dele deixa de enviar boletins na hora. Os boletins já enviados continuam valendo.">
+                    {% csrf_token %}<input type="hidden" name="acao" value="desativar"><input type="hidden" name="id" value="{{ d.pk }}">
+                    <button class="btn perigo largo" type="submit">Desativar acesso</button>
+                  </form>
+                </div>
+              </div>
+            </details>
+            {% else %}
+            <form method="post">
+              {% csrf_token %}<input type="hidden" name="acao" value="reativar"><input type="hidden" name="id" value="{{ d.pk }}">
+              <button class="btn" type="submit">Reativar</button>
+            </form>
+            {% endif %}
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+      <p class="sem-resultado" id="sem-resultado" hidden>Nenhum repórter nesta lista.</p>
+      {% else %}
+      <div class="vazio">
+        <strong>Nenhum repórter cadastrado ainda</strong>
+        Comece pelo formulário ao lado: só o nome já basta.
+      </div>
+      {% endif %}
+    </section>
+  </div>
+</main>
+
+<dialog class="entrega" id="entrega" aria-labelledby="entrega-titulo">
+  <div class="entrega-topo">
+    <div>
+      <h2 id="entrega-titulo">Acesso de <span data-campo="nome"></span></h2>
+      <p>Escolha um dos dois jeitos. Os dois fazem a mesma coisa.</p>
+    </div>
+    <button class="fechar" type="button" data-fechar aria-label="Fechar"><svg class="ico" aria-hidden="true"><use href="#i-fechar"/></svg></button>
+  </div>
+  <div class="entrega-corpo">
+    <figure class="qr">
+      <div class="quadro"><img alt="QR Code de configuração do app" width="264" height="264" data-campo="qr"></div>
+      <figcaption><b>Repórter ao seu lado:</b> ele aponta a câmera do celular para este código.</figcaption>
+    </figure>
+    <div class="caminho">
+      <h3>Repórter longe</h3>
+      <p>Mande o link só para ele, numa conversa individual.</p>
+      <div class="botoes">
+        <a class="btn primario" data-campo="whatsapp" target="_blank" rel="noopener" autofocus><svg class="ico" aria-hidden="true"><use href="#i-mensagem"/></svg><span data-campo="whatsapp-rotulo">Enviar pelo WhatsApp</span></a>
+        <div class="copia">
+          <input readonly data-campo="link" aria-label="Link de configuração">
+          <button class="btn" type="button" data-copiar><svg class="ico" aria-hidden="true"><use href="#i-copiar"/></svg>Copiar</button>
+        </div>
+      </div>
+      <p class="aviso-link"><svg class="ico" aria-hidden="true"><use href="#i-cadeado"/></svg><span>O link funciona como uma senha. Quem tiver o link envia boletins em nome de <span data-campo="nome"></span>.</span></p>
+      <div class="passos">
+        <b>Depois que ele abrir</b>
+        <ol>
+          <li>O app abre com a mensagem "Celular configurado".</li>
+          <li>Peça para ele tocar em <b>Ajustes → Testar conexão</b>.</li>
+          <li>Nesta lista, ele passa para "Abriu o app".</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+  const $ = (s, el = document) => el.querySelector(s);
+  const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+  const dialogo = $("#entrega"), toast = $("#toast");
+  let origem = null, tempoToast;
+
+  function avisar(texto) {
+    toast.textContent = texto; toast.classList.add("visivel");
+    clearTimeout(tempoToast); tempoToast = setTimeout(() => toast.classList.remove("visivel"), 2600);
+  }
+
+  function entregar(botao) {
+    const d = botao.dataset;
+    origem = botao;
+    $$('[data-campo="nome"]', dialogo).forEach((el) => { el.textContent = d.nome; });
+    $('[data-campo="qr"]', dialogo).src = d.qr + "?t=" + Date.now();
+    $('[data-campo="link"]', dialogo).value = d.link;
+    $('[data-campo="whatsapp"]', dialogo).href = d.whatsapp;
+    $('[data-campo="whatsapp-rotulo"]', dialogo).textContent = d.telefone ? `Enviar para ${d.telefone}` : "Escolher contato no WhatsApp";
+    dialogo.showModal();
+  }
+
+  $$("[data-entregar]").forEach((b) => b.addEventListener("click", () => entregar(b)));
+  $("[data-fechar]", dialogo).addEventListener("click", () => dialogo.close());
+  dialogo.addEventListener("click", (e) => { if (e.target === dialogo) dialogo.close(); });
+  dialogo.addEventListener("close", () => {
+    $('[data-campo="qr"]', dialogo).removeAttribute("src");
+    if (origem) origem.focus();
+  });
+
+  $("[data-copiar]", dialogo).addEventListener("click", async () => {
+    const campo = $('[data-campo="link"]', dialogo);
+    try { await navigator.clipboard.writeText(campo.value); }
+    catch { campo.select(); document.execCommand("copy"); }
+    avisar("Link copiado. Cole na conversa com o repórter.");
+  });
+
+  $$("form[data-confirmar]").forEach((f) => f.addEventListener("submit", (e) => {
+    if (!confirm(f.dataset.confirmar)) e.preventDefault();
+  }));
+  $$("form").forEach((f) => f.addEventListener("submit", (e) => {
+    if (!e.defaultPrevented) $$("button[type=submit]", f).forEach((b) => { b.disabled = true; });
+  }));
+
+  // um "Gerenciar" aberto por vez; fecha ao clicar fora ou com Esc
+  const gerenciar = $$("details.gerenciar");
+  gerenciar.forEach((d) => d.addEventListener("toggle", () => {
+    if (d.open) gerenciar.forEach((o) => { if (o !== d) o.open = false; });
+  }));
+  document.addEventListener("click", (e) => gerenciar.forEach((d) => { if (d.open && !d.contains(e.target)) d.open = false; }));
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    gerenciar.forEach((d) => { if (d.open) { d.open = false; $("summary", d).focus(); } });
+  });
+
+  // filtro e busca
+  const itens = $$(".reporter"), busca = $("#busca"), semResultado = $("#sem-resultado");
+  function filtrar() {
+    const tipo = ($('input[name="filtro"]:checked') || {}).value || "todos";
+    const termo = (busca ? busca.value : "").trim().toLowerCase();
+    const termoNum = termo.replace(/\D/g, "");
+    let visiveis = 0;
+    itens.forEach((li) => {
+      const s = li.dataset.situacao;
+      const tipoOk = tipo === "todos" || s === tipo;
+      const textoOk = !termo || li.dataset.busca.includes(termo) || (termoNum.length >= 3 && li.dataset.busca.replace(/\D/g, "").includes(termoNum));
+      li.hidden = !(tipoOk && textoOk);
+      if (!li.hidden) visiveis++;
+    });
+    if (semResultado) semResultado.hidden = visiveis > 0 || !itens.length;
+  }
+  $$('input[name="filtro"]').forEach((r) => r.addEventListener("change", filtrar));
+  if (busca) busca.addEventListener("input", filtrar);
+
+  // recém-cadastrado (ou código novo): destaca a linha e abre a entrega
+  const entregarId = "{{ entregar|default:'' }}";
+  if (entregarId) {
+    const botao = $(`[data-entregar="${entregarId}"]`);
+    if (botao) {
+      const li = botao.closest(".reporter");
+      li.classList.add("destaque");
+      li.scrollIntoView({ block: "center" });
+      setTimeout(() => li.classList.remove("destaque"), 4000);
+      entregar(botao);
+    }
+    history.replaceState(null, "", location.pathname);
+  }
+})();
+</script>
+</body>
+</html>

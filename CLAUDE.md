@@ -20,7 +20,7 @@ Repositório Git: `https://github.com/elvertoni/apurabu.git`, branch principal `
 ## Comandos
 
 ```bash
-# Testes do servidor (22). Dependências em servidor/requirements.txt
+# Testes do servidor (29). Dependências em servidor/requirements.txt
 cd servidor && python manage.py test boletins
 python manage.py test boletins.tests.ApiBoletinsTest.test_ping   # um teste só
 
@@ -84,6 +84,12 @@ O JSON de teste mapeia `nome da foto -> [textos dos QR]` (3 `QRBU` + 2 `QRCE` po
 - Urnas esperadas vêm de `LocalVotacao.secoes`. Nomes vêm de `Candidato`, pela UE do cargo (`BR`, UF ou município).
 - A página atualiza a cada 20 s e monta o DOM só com `textContent`, porque nomes e repórter são dados externos. `?telao=1` abre o modo telão.
 - O Django 5 guarda templates em cache: com `runserver --noreload`, uma mudança no template só aparece depois de reiniciar o servidor.
+
+## Repórteres (`/equipe/`)
+
+- `EquipeView` cadastra repórteres (`Dispositivo`), um a um ou em lote, e entrega o acesso: QR (`EquipeQrView`, `/equipe/<pk>/qr.svg`, sem cache), link copiável e `wa.me` com mensagem pronta. Exige as permissões `add`/`change` de `Dispositivo` (na prática, superusuário); membro da equipe comum recebe 403.
+- `Dispositivo.telefone` guarda só dígitos com `55` (`normalizar_telefone`). `ultimo_contato` é gravado pelo `TokenMixin` (no máximo 1 vez por minuto) e vira o status "Abriu o app": o PWA chama `/api/nomes/` ao abrir.
+- Todas as ações são POST com `acao=criar|lote|editar|desativar|reativar|novo_codigo` e voltam com redirect; `?entregar=<pk>` abre a janela de entrega daquele repórter.
 
 ## Manual (`/manual/`)
 

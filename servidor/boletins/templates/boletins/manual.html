@@ -249,7 +249,10 @@
           <span class="quem">Computador do estúdio, logado no admin</span></li>
         <li><strong>App do celular</strong>
           <span class="url"><a href="/app/">/app/</a><button class="copiar" type="button" data-copiar="/app/">Copiar</button></span>
-          <span class="quem">Repórteres, com o celular configurado pelo QR Code do admin</span></li>
+          <span class="quem">Repórteres, com o celular configurado pelo link ou QR Code de acesso</span></li>
+        <li><strong>Repórteres</strong>
+          <span class="url"><a href="/equipe/">/equipe/</a><button class="copiar" type="button" data-copiar="/equipe/">Copiar</button></span>
+          <span class="quem">Administradores: cadastrar repórteres e entregar o acesso</span></li>
         <li><strong>Administração</strong>
           <span class="url"><a href="/admin/">/admin/</a><button class="copiar" type="button" data-copiar="/admin/">Copiar</button></span>
           <span class="quem">Coordenação e membros da equipe</span></li>
@@ -280,11 +283,11 @@
 
     <section id="celulares" aria-labelledby="t-celulares">
       <h2 id="t-celulares">Antes da eleição: celulares</h2>
-      <p class="abre">Cada repórter ou equipe precisa de um cadastro próprio no admin. O celular se configura sozinho lendo um QR Code.</p>
+      <p class="abre">Cada repórter precisa de um cadastro próprio na tela <a href="/equipe/">Repórteres</a>. O celular se configura sozinho pelo link ou pelo QR Code.</p>
       <ol class="lista">
-        <li>Entre em <b>Admin → Celulares autorizados → Adicionar</b>, cadastre um registro por repórter ou equipe e salve.</li>
-        <li>Abra o cadastro salvo: aparece um <b>QR Code de configuração</b>.</li>
-        <li>O repórter aponta a câmera do celular para esse QR Code. O app abre já configurado com o servidor e o código de acesso.</li>
+        <li>Em <a href="/equipe/">/equipe/</a>, preencha o nome e, se quiser, o WhatsApp, e toque em <b>Cadastrar e entregar acesso</b>. Para muitos de uma vez, use <b>Cadastrar vários de uma vez</b>, um por linha.</li>
+        <li>Abre a janela de entrega: com o repórter ao lado, ele aponta a câmera para o QR Code; longe, toque em <b>Enviar pelo WhatsApp</b> ou <b>Copiar</b> o link e mande só para ele.</li>
+        <li>O app abre já configurado com o servidor e o código de acesso. Na lista, o repórter passa de "Ainda não abriu o link" para "Abriu o app".</li>
         <li>No celular, use <b>Adicionar à tela inicial</b> para instalar o app.</li>
         <li>Na aba <b>Ajustes</b> do app, toque em <b>Testar conexão</b> para confirmar.</li>
       </ol>
@@ -326,8 +329,8 @@
         </div>
         <div class="painel-box">
           <h3>Celular perdido</h3>
-          <p>Em <b>Admin → Celulares autorizados</b>, desmarque <b>Ativo</b> no cadastro daquele celular. Ele para de enviar imediatamente.</p>
-          <p>Se o link de configuração foi parar com outra pessoa, marque o celular na lista e use a ação <b>Gerar novo código de acesso</b>. Depois mostre o novo QR Code ao repórter. Os boletins já enviados continuam valendo.</p>
+          <p>Em <a href="/equipe/">Repórteres</a>, toque em <b>Gerenciar → Desativar acesso</b> no repórter. O celular dele para de enviar imediatamente.</p>
+          <p>Se o link foi parar com outra pessoa, use <b>Gerenciar → Gerar novo código</b> e entregue o novo acesso. Os boletins já enviados continuam valendo.</p>
         </div>
       </div>
     </section>

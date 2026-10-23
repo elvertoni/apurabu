@@ -270,3 +270,77 @@ class PwaTest(TestCase):
         self.assertEqual(self.client.get('/app/vendor/zxing_reader.wasm')['Content-Type'], 'application/wasm')
         self.assertEqual(self.client.get('/app/../config/settings.py').status_code, 404)
         self.assertEqual(self.client.get('/app/%2e%2e/servidor/db.sqlite3').status_code, 404)
+
+
+class EquipeTest(TestCase):
+    def setUp(self):
+        self.admin = User.objects.create_superuser('admin', 'a@a.com', 'senha-teste-123')
+        self.client.login(username='admin', password='senha-teste-123')
+
+    def post(self, **dados):
+        return self.client.post('/equipe/', dados)
+
+    def test_so_administrador_acessa(self):
+        self.client.logout()
+        r = self.client.get('/equipe/')
+        self.assertEqual(r.status_code, 302)
+        self.assertIn('/admin/login/', r['Location'])
+        User.objects.create_user('locutor', password='senha-teste-123', is_staff=True)
+        self.client.login(username='locutor', password='senha-teste-123')
+        self.assertEqual(self.client.get('/equipe/').status_code, 403)
+        self.assertNotContains(self.client.get('/painel/'), 'href="/equipe/"')
+
+    def test_cadastra_e_abre_a_entrega(self):
+        r = self.post(acao='criar', nome='Maria Souza', telefone='(43) 99999-1234')
+        d = Dispositivo.objects.get(nome='Maria Souza')
+        self.assertEqual(d.telefone, '5543999991234')
+        self.assertEqual(r['Location'], f'/equipe/?entregar={d.pk}')
+        pagina = self.client.get(r['Location'])
+        self.assertContains(pagina, 'https://wa.me/5543999991234?text=')
+        self.assertContains(pagina, '(43) 99999-1234')
+        self.assertContains(pagina, 'Ainda não abriu o link')
+
+    def test_recusa_nome_vazio_repetido_e_telefone_invalido(self):
+        Dispositivo.objects.create(nome='Maria Souza')
+        self.assertContains(self.post(acao='criar', nome='  '), 'Escreva o nome', status_code=400)
+        self.assertContains(self.post(acao='criar', nome='maria souza'), 'Já existe', status_code=400)
+        self.assertContains(self.post(acao='criar', nome='Ana', telefone='1234'), 'DDD', status_code=400)
+        self.assertEqual(Dispositivo.objects.count(), 1)
+
+    def test_cadastro_em_lote(self):
+        Dispositivo.objects.create(nome='Ana Prado')
+        self.post(acao='lote', lista='Maria Souza, (43) 99999-1234\nJoão Lima 43 98888-0000\nana prado\nCarlos; 12\n\nBeto')
+        nomes = dict(Dispositivo.objects.values_list('nome', 'telefone'))
+        self.assertEqual(nomes['Maria Souza'], '5543999991234')
+        self.assertEqual(nomes['João Lima'], '5543988880000')
+        self.assertEqual(nomes['Beto'], '')
+        self.assertNotIn('Carlos', nomes)  # número curto demais: fica de fora e é avisado
+        self.assertEqual(Dispositivo.objects.filter(nome__iexact='ana prado').count(), 1)
+
+    def test_desativar_reativar_e_trocar_codigo(self):
+        d = Dispositivo.objects.create(nome='Maria')
+        self.post(acao='desativar', id=d.pk)
+        d.refresh_from_db()
+        self.assertFalse(d.ativo)
+        self.assertEqual(self.client.get(f'/equipe/{d.pk}/qr.svg').status_code, 404)
+        self.post(acao='reativar', id=d.pk)
+        antigo = d.token
+        r = self.post(acao='novo_codigo', id=d.pk)
+        d.refresh_from_db()
+        self.assertTrue(d.ativo)
+        self.assertNotEqual(d.token, antigo)
+        self.assertEqual(r['Location'], f'/equipe/?entregar={d.pk}')
+
+    def test_editar(self):
+        d = Dispositivo.objects.create(nome='Maria', telefone='5543999991234')
+        self.post(acao='editar', id=d.pk, nome='Maria Souza', telefone='')
+        d.refresh_from_db()
+        self.assertEqual((d.nome, d.telefone), ('Maria Souza', ''))
+
+    def test_qr_e_app_configurado(self):
+        d = Dispositivo.objects.create(nome='Maria')
+        r = self.client.get(f'/equipe/{d.pk}/qr.svg')
+        self.assertEqual(r['Content-Type'], 'image/svg+xml')
+        self.assertEqual(r['Cache-Control'], 'no-store')
+        self.client.get('/api/ping/', HTTP_AUTHORIZATION=f'Token {d.token}')
+        self.assertContains(self.client.get('/equipe/'), 'Abriu o app')
